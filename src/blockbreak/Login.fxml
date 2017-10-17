@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane id="AnchorPane" prefHeight="400.0" prefWidth="600.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="blockbreak.LoginController">
+  <children>
+    <TextField layoutX="109.0" layoutY="110.0" prefHeight="28.0" prefWidth="382.0" fx:id="fieldName" />
+    <Label layoutX="109.0" layoutY="94.0" text="User Name" />
+    <Button layoutX="272.0" layoutY="261.0" mnemonicParsing="false" text="Login" onAction="#handleButtonAction" fx:id="button" />
+  </children>
+</AnchorPane>
