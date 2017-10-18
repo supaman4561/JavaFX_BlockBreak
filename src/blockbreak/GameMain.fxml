@@ -7,10 +7,10 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane onKeyPressed="#handleKeyPressed" prefHeight="850.0" prefWidth="420.0" style="-fx-background-color: lightgray;&#10;&#10;&#10;&#10;" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="blockbreak.GameMainController">
+<AnchorPane onKeyPressed="#handleKeyPressed" prefHeight="650.0" prefWidth="320.0" style="-fx-background-color: lightgray;&#10;&#10;&#10;&#10;" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="blockbreak.GameMainController">
   <children>
     <Text fx:id="opponentName" layoutX="10.0" layoutY="20.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" />
-    <Text fx:id="myName" layoutX="388.0" layoutY="841.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" textAlignment="RIGHT" />
-    <Pane layoutX="10.0" layoutY="25.0" prefHeight="800.0" prefWidth="400.0" style="-fx-background-color: white;&#10;" />
+    <Text fx:id="myName" layoutX="270.0" layoutY="640.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" textAlignment="RIGHT" />
+    <Pane layoutX="10.0" layoutY="25.0" prefHeight="600.0" prefWidth="300.0" style="-fx-background-color: white;&#10;" />
   </children>
 </AnchorPane>
