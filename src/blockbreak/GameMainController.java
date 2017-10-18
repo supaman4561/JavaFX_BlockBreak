@@ -37,7 +37,7 @@ public class GameMainController implements Initializable {
      */
     private static final Scene SCENE;
     
-    PrintWriter out;
+    PrintWriter myOut;
 
     static {
         FXMLLoader fxmlLoader = new FXMLLoader(BlockBreak.class.getResource("GameMain.fxml"));
@@ -64,7 +64,6 @@ public class GameMainController implements Initializable {
         
         Socket socket;
         String myName;
-        PrintWriter out;
         
         public MesgRecvThread(Socket s, String n) {
             socket = s;
@@ -76,8 +75,8 @@ public class GameMainController implements Initializable {
             try {
                 InputStreamReader isr = new InputStreamReader(socket.getInputStream());
                 BufferedReader br = new BufferedReader(isr);
-                out = new PrintWriter(socket.getOutputStream(), true);
-                out.println(myName);
+                myOut = new PrintWriter(socket.getOutputStream(), true);
+                myOut.println(myName);
                 while(true) {
                     String inputLine = br.readLine();
                     if(inputLine != null) {
@@ -90,8 +89,8 @@ public class GameMainController implements Initializable {
                     }else{
                         break;
                     }
-                    socket.close();
                 }
+		socket.close();
             } catch (IOException e) {
                 System.err.println("error occured: " + e);
             }
@@ -114,6 +113,8 @@ public class GameMainController implements Initializable {
     private void handleKeyPressed(KeyEvent event) {
         System.out.println("keypressed");
         System.out.println(event.getCode());
+	myOut.println(event.getCode());
+	myOut.flush();
     }
     
     /**

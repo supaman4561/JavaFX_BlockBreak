@@ -16,7 +16,7 @@ import javafx.stage.Stage;
 
 /**
  *
- * @author PCUser
+ * @author Sudo
  */
 public class BlockBreak extends Application {
     
