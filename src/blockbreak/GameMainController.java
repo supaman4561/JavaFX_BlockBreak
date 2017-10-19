@@ -5,14 +5,11 @@
  */
 package blockbreak;
 
-import java.io.IOException;
-import java.net.URL;
+import java.io.*;
+import java.net.*;
 import java.util.ResourceBundle;
-import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.fxml.Initializable;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
+import javafx.fxml.*;
+import javafx.scene.*;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
@@ -40,6 +37,8 @@ public class GameMainController implements Initializable {
      */
     private static final Scene SCENE;
     
+    PrintWriter myOut;
+
     static {
         FXMLLoader fxmlLoader = new FXMLLoader(BlockBreak.class.getResource("GameMain.fxml"));
         try {
@@ -54,6 +53,48 @@ public class GameMainController implements Initializable {
         s.setFill(Color.TRANSPARENT);
         SCENE = s;
         INSTANCE = fxmlLoader.getController();
+    }
+    
+    public GameMainController() {
+        MesgRecvThread mrt = new MesgRecvThread(BlockBreak.getSocket(), BlockBreak.getUserName());
+        mrt.start();
+    }
+    
+    public class MesgRecvThread extends Thread {
+        
+        Socket socket;
+        String myName;
+        
+        public MesgRecvThread(Socket s, String n) {
+            socket = s;
+            myName = n;
+        }
+        
+        @Override
+        public void run() {
+            try {
+                InputStreamReader isr = new InputStreamReader(socket.getInputStream());
+                BufferedReader br = new BufferedReader(isr);
+                myOut = new PrintWriter(socket.getOutputStream(), true);
+                myOut.println(myName);
+                while(true) {
+                    String inputLine = br.readLine();
+                    if(inputLine != null) {
+                        System.out.println(inputLine);
+                        String[] inputTokens = inputLine.split(",");
+                        String cmd = inputTokens[0];
+                        if(cmd.equals("hoge")){
+                            // TODO
+                        }
+                    }else{
+                        break;
+                    }
+                }
+		socket.close();
+            } catch (IOException e) {
+                System.err.println("error occured: " + e);
+            }
+        }
     }
     
     /**
@@ -72,6 +113,8 @@ public class GameMainController implements Initializable {
     private void handleKeyPressed(KeyEvent event) {
         System.out.println("keypressed");
         System.out.println(event.getCode());
+	myOut.println(event.getCode());
+	myOut.flush();
     }
     
     /**

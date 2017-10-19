@@ -5,6 +5,8 @@
  */
 package blockbreak;
 
+import java.net.*;
+import java.io.*;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -20,6 +22,7 @@ public class BlockBreak extends Application {
     
     private static Stage presentStage;
     private static String userName;
+    private static Socket socket = null;
     
     @Override
     public void start(Stage stage) throws Exception {
@@ -48,6 +51,10 @@ public class BlockBreak extends Application {
         return userName;
     }
     
+    public static Socket getSocket() {
+        return socket;
+    }
+    
     public static Stage getPresentStage() {
         return presentStage;
     }
@@ -56,6 +63,13 @@ public class BlockBreak extends Application {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
+        try {
+            socket = new Socket("localhost", 10027);
+        } catch (UnknownHostException e) {
+            System.err.println("Not found IPAddress of host." + e);
+        } catch (IOException e) {
+            System.err.println("The error occured." + e);
+        }
         launch(args);
     }
     
