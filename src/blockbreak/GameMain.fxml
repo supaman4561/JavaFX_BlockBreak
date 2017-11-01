@@ -11,6 +11,6 @@
   <children>
     <Text fx:id="opponentName" layoutX="10.0" layoutY="20.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" />
     <Text fx:id="myName" layoutX="388.0" layoutY="841.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" textAlignment="RIGHT" />
-    <Pane layoutX="10.0" layoutY="25.0" prefHeight="800.0" prefWidth="400.0" style="-fx-background-color: white;&#10;" />
+    <Pane fx:id="root" layoutX="10.0" layoutY="25.0" prefHeight="800.0" prefWidth="400.0" style="-fx-background-color: white;&#10;" />
   </children>
 </AnchorPane>

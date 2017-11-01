@@ -80,19 +80,24 @@ class BallMoveThread extends Thread {
 	    move();
 	    String str = new String("Ball," + id + "," + x + "," + y + ",");
 	    Server.SendAll(str);
+	    try{
+		Thread.sleep(16);
+	    } catch (InterruptedException e) {
+		e.printStackTrace();
+	    }
 	}
     }
 
     private void move() {
-        if(x < 0){
+        if(x < 10){
 	    xVec = 1;
-	}else if(x > 500){
+	}else if(x > 400){
 	    xVec = -1;
 	}
 
-	if(y < 0){
+	if(y < 20){
 	    yVec = 1;
-	}else if(y > 500){
+	}else if(y > 820){
 	    yVec = -1;
 	}
 
