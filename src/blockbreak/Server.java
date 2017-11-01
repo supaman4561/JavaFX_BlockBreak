@@ -91,13 +91,13 @@ class BallMoveThread extends Thread {
     private void move() {
         if(x < 10){
 	    xVec = 1;
-	}else if(x > 400){
+	}else if(x > 300){
 	    xVec = -1;
 	}
 
 	if(y < 20){
 	    yVec = 1;
-	}else if(y > 820){
+	}else if(y > 600){
 	    yVec = -1;
 	}
 
