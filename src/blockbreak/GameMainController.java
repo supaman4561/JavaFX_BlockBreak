@@ -33,7 +33,11 @@ public class GameMainController implements Initializable {
 
     @FXML
     private Pane root;
+<<<<<<< HEAD
 
+=======
+    
+>>>>>>> 80ebf4971c009a225928c83c3d32542f576ce096
     /**
      * instanvce(singleton)
      */
@@ -47,7 +51,11 @@ public class GameMainController implements Initializable {
     /**
      * for sending to Server
      */
+<<<<<<< HEAD
     ArrayList<Block> block = new ArrayList<Block>();
+=======
+    Circle ball;
+>>>>>>> 80ebf4971c009a225928c83c3d32542f576ce096
     PrintWriter myOut;
 
     static {
@@ -69,12 +77,16 @@ public class GameMainController implements Initializable {
     }
 
     public GameMainController() {
+<<<<<<< HEAD
       for (int j=0; j<4; j++) {
         for (int i=0; i<5; i++) {
           block.add(new Block(i,j,(i+j)%4));
         }
       }
 //      block = new Rectangle();
+=======
+        ball = new Circle(5.0);
+>>>>>>> 80ebf4971c009a225928c83c3d32542f576ce096
         MesgRecvThread mrt = new MesgRecvThread(BlockBreak.getSocket(), BlockBreak.getUserName());
         mrt.start();
     }
@@ -85,7 +97,11 @@ public class GameMainController implements Initializable {
         String myName;
 
         public MesgRecvThread(Socket s, String n) {
+<<<<<<< HEAD
 
+=======
+	    
+>>>>>>> 80ebf4971c009a225928c83c3d32542f576ce096
             socket = s;
             myName = n;
         }
@@ -103,10 +119,17 @@ public class GameMainController implements Initializable {
                         System.out.println(inputLine);
                         String[] inputTokens = inputLine.split(",");
                         String cmd = inputTokens[0];
+<<<<<<< HEAD
                        if(cmd.equals("Block")){
                             Block.delete(block.get(8));
                             Block.draw(block.get(8));
                       }
+=======
+                        if(cmd.equals("Ball")){
+                            ball.setCenterX(Integer.parseInt(inputTokens[2]));
+			    ball.setCenterY(Integer.parseInt(inputTokens[3]));
+                        }
+>>>>>>> 80ebf4971c009a225928c83c3d32542f576ce096
                     }else{
                         break;
                     }
@@ -145,11 +168,19 @@ public class GameMainController implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         // TODO
         myName.setText(BlockBreak.getUserName());
+<<<<<<< HEAD
 	      root.getChildren().addAll(block);
     }
 
 
 
+=======
+	root.getChildren().add(ball);
+    }    
+    
+    
+    
+>>>>>>> 80ebf4971c009a225928c83c3d32542f576ce096
 }
 
 class Block extends Rectangle {
