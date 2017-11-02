@@ -28,7 +28,7 @@ class ClientProcThread extends Thread {
     private BufferedReader myIn;
     private PrintWriter myOut;
     private String myName;
-    
+
     public  ClientProcThread(int n, Socket i, InputStreamReader isr,
                                 BufferedReader in, PrintWriter out) {
         number = n;
@@ -36,28 +36,54 @@ class ClientProcThread extends Thread {
         myIsr = isr;
         myIn = in;
         myOut = out;
-        
+
     }
-    
+
     @Override
     public void run() {
-        try { 
+        try {
             myOut.println("Hello, client No." + number + "!");
-            
+
             myName = myIn.readLine();
-            
+
             // watching input to socket
             while(true) {
                 String str = myIn.readLine();
                 System.out.println("Receive from client No." + number +
                                    "(" + myName + "), Messages: " + str);
                 if(str != null) {
-                    Server.SendAll(str, myName);
+                    Server.SendAll(str);
                 }
             }
         } catch (IOException e) {
-            
+
         }
+    }
+}
+
+class BlockThread extends Thread {
+    private int id;
+    private int x;
+    private int y;
+    private int xVec;
+    private int yVec;
+    public BlockThread(int num,int x, int y) {
+	id = num;
+	x = 450;
+	y = 450;
+    }
+
+    @Override
+    public void run() {
+	     while(true){
+         String str = new String("Block");
+	       Server.SendAll(str);
+	       try{
+		         Thread.sleep(16);
+	       } catch (InterruptedException e) {
+		         e.printStackTrace();
+	       }
+	     }
     }
 }
 
@@ -69,15 +95,16 @@ public class Server {
     private static ArrayList<BufferedReader> in;
     private static ArrayList<PrintWriter> out;
     private static ArrayList<ClientProcThread> myClientProcThread;
+    private static ArrayList<BlockThread> myBlockThread;
 
-    public static void SendAll(String str, String myName){
+    public static void SendAll(String str){
         for(int i=0; i<incoming.size(); i++){
             out.get(i).println(str);
             out.get(i).flush();
             System.out.println("Send messages to client No." + i);
         }
     }
-    
+
     public static void main(String[] args) {
 
         incoming = new ArrayList<Socket>();
@@ -85,8 +112,10 @@ public class Server {
         in = new ArrayList<BufferedReader>();
         out = new ArrayList<PrintWriter>();
         myClientProcThread = new ArrayList<ClientProcThread>();
+	myBlockThread = new ArrayList<BlockThread>();
 
         int n;
+	int numBlock=0;
 
         try {
             System.out.println("The server has launched!");
@@ -95,14 +124,20 @@ public class Server {
                 n = incoming.size();
                 incoming.add(server.accept());
                 System.out.println("Accept client No." + n);
-                
+
                 isr.add(new InputStreamReader(incoming.get(n).getInputStream()));
                 in.add(new BufferedReader(isr.get(n)));
                 out.add(new PrintWriter(incoming.get(n).getOutputStream(), true));
-                
+
                 myClientProcThread.add(
                         new ClientProcThread(n, incoming.get(n), isr.get(n), in.get(n), out.get(n)));
                 myClientProcThread.get(n).start(); // start thread
+
+		if(myClientProcThread.size() == 2){
+		    numBlock = myBlockThread.size();
+		    myBlockThread.add(new BlockThread(numBlock, 400, 400));
+		    myBlockThread.get(numBlock).start();
+		}
             }
         } catch (Exception e) {
             System.out.println("Error occured when socket was being created: " + e );
