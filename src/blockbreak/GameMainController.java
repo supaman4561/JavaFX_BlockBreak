@@ -10,6 +10,8 @@ import java.net.*;
 import java.util.ResourceBundle;
 import javafx.fxml.*;
 import javafx.scene.*;
+import javafx.scene.layout.*;
+import javafx.scene.shape.*;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
@@ -26,6 +28,9 @@ public class GameMainController implements Initializable {
     
     @FXML
     private Text opponentName;
+
+    @FXML
+    private Pane root;
     
     /**
      * instanvce(singleton)
@@ -36,7 +41,11 @@ public class GameMainController implements Initializable {
      * Scene(singleton)
      */
     private static final Scene SCENE;
-    
+
+    /**
+     * for sending to Server
+     */
+    Circle ball;
     PrintWriter myOut;
 
     static {
@@ -48,14 +57,17 @@ public class GameMainController implements Initializable {
         }
         Parent parent = fxmlLoader.getRoot();
         parent.requestFocus();
-        Scene s = new Scene(parent);
+
+	Scene s = new Scene(parent);
         s.getRoot().requestFocus();
+
         s.setFill(Color.TRANSPARENT);
         SCENE = s;
         INSTANCE = fxmlLoader.getController();
     }
     
     public GameMainController() {
+        ball = new Circle(5.0);
         MesgRecvThread mrt = new MesgRecvThread(BlockBreak.getSocket(), BlockBreak.getUserName());
         mrt.start();
     }
@@ -66,6 +78,7 @@ public class GameMainController implements Initializable {
         String myName;
         
         public MesgRecvThread(Socket s, String n) {
+	    
             socket = s;
             myName = n;
         }
@@ -83,8 +96,9 @@ public class GameMainController implements Initializable {
                         System.out.println(inputLine);
                         String[] inputTokens = inputLine.split(",");
                         String cmd = inputTokens[0];
-                        if(cmd.equals("hoge")){
-                            // TODO
+                        if(cmd.equals("Ball")){
+                            ball.setCenterX(Integer.parseInt(inputTokens[2]));
+			    ball.setCenterY(Integer.parseInt(inputTokens[3]));
                         }
                     }else{
                         break;
@@ -124,6 +138,7 @@ public class GameMainController implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         // TODO
         myName.setText(BlockBreak.getUserName());
+	root.getChildren().add(ball);
     }    
     
     
