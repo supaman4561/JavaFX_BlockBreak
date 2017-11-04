@@ -22,21 +22,27 @@ import javafx.scene.text.Text;
  * @author PCUser
  */
 public class GameMainController implements Initializable {
-    
+
     @FXML
     private Text myName;
-    
+
     @FXML
     private Text opponentName;
 
     @FXML
     private Pane root;
-    
+
+    @FXML
+    private Rectangle upperpaddle;
+
+    @FXML
+    private Rectangle underpaddle;
+
     /**
      * instanvce(singleton)
      */
     private static final GameMainController INSTANCE;
-    
+
     /**
      * Scene(singleton)
      */
@@ -65,24 +71,31 @@ public class GameMainController implements Initializable {
         SCENE = s;
         INSTANCE = fxmlLoader.getController();
     }
-    
+
     public GameMainController() {
         ball = new Circle(5.0);
         MesgRecvThread mrt = new MesgRecvThread(BlockBreak.getSocket(), BlockBreak.getUserName());
         mrt.start();
     }
-    
+    public void PaddleMoveLeft(String ClientNum) {
+      if(ClientNum.equals("0")) underpaddle.setX(underpaddle.getX()-20);
+      if(ClientNum.equals("1")) upperpaddle.setX(upperpaddle.getX()-20);
+    }
+    public void PaddleMoveRight(String ClientNum){
+      if(ClientNum.equals("0")) underpaddle.setX(underpaddle.getX()+20);
+      if(ClientNum.equals("1")) upperpaddle.setX(upperpaddle.getX()+20);
+    }
+
     public class MesgRecvThread extends Thread {
-        
+
         Socket socket;
         String myName;
-        
+
         public MesgRecvThread(Socket s, String n) {
-	    
             socket = s;
             myName = n;
         }
-        
+
         @Override
         public void run() {
             try {
@@ -94,11 +107,25 @@ public class GameMainController implements Initializable {
                     String inputLine = br.readLine();
                     if(inputLine != null) {
                         System.out.println(inputLine);
-                        String[] inputTokens = inputLine.split(",");
+                        String[] inputTokens = inputLine.split(",",-1);
                         String cmd = inputTokens[0];
+                        System.out.println(cmd);
+
+                    System.out.println(inputTokens.length);
+                        if(cmd.equals("Paddle")){
+                          String cmd2 = inputTokens[1];
+                          String cmd3 = inputTokens[2];
+                        System.out.println(cmd2+"です");
+                          if(cmd2.equals("LEFT")){
+                            PaddleMoveLeft(cmd3);
+                        }
+                          if(cmd2.equals("RIGHT")){
+                            PaddleMoveRight(cmd3);
+                        }
+                      }
                         if(cmd.equals("Ball")){
                             ball.setCenterX(Integer.parseInt(inputTokens[2]));
-			    ball.setCenterY(Integer.parseInt(inputTokens[3]));
+			                      ball.setCenterY(Integer.parseInt(inputTokens[3]));
                         }
                     }else{
                         break;
@@ -110,7 +137,7 @@ public class GameMainController implements Initializable {
             }
         }
     }
-    
+
     /**
      * return instance(singleton)
      * @return INSTANCE
@@ -118,11 +145,11 @@ public class GameMainController implements Initializable {
     public static GameMainController getInstance() {
         return INSTANCE;
     }
-    
+
     public void show() {
         BlockBreak.getPresentStage().setScene(SCENE);
     }
-    
+
     @FXML
     private void handleKeyPressed(KeyEvent event) {
         System.out.println("keypressed");
@@ -130,7 +157,7 @@ public class GameMainController implements Initializable {
 	myOut.println(event.getCode());
 	myOut.flush();
     }
-    
+
     /**
      * Initializes the controller class.
      */
@@ -139,8 +166,8 @@ public class GameMainController implements Initializable {
         // TODO
         myName.setText(BlockBreak.getUserName());
 	root.getChildren().add(ball);
-    }    
-    
-    
-    
+    }
+
+
+
 }

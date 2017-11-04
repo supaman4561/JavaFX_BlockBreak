@@ -28,7 +28,7 @@ class ClientProcThread extends Thread {
     private BufferedReader myIn;
     private PrintWriter myOut;
     private String myName;
-    
+
     public  ClientProcThread(int n, Socket i, InputStreamReader isr,
                                 BufferedReader in, PrintWriter out) {
         number = n;
@@ -36,27 +36,33 @@ class ClientProcThread extends Thread {
         myIsr = isr;
         myIn = in;
         myOut = out;
-        
+
     }
-    
+
     @Override
     public void run() {
-        try { 
+        try {
             myOut.println("Hello, client No." + number + "!");
-            
+
             myName = myIn.readLine();
-            
+
+            String keycode = " "; //クライアントに送信するキーのコード
+
             // watching input to socket
             while(true) {
                 String str = myIn.readLine();
+
                 System.out.println("Receive from client No." + number +
                                    "(" + myName + "), Messages: " + str);
                 if(str != null) {
                     Server.SendAll(str);
-                }
+                    keycode =str;
+                  }
+              String paddle = new String("Paddle,"+keycode+","+String.valueOf(number));
+              Server.SendAll(paddle);
             }
         } catch (IOException e) {
-            
+
         }
     }
 }
@@ -67,13 +73,13 @@ class BallMoveThread extends Thread {
     private int y;
     private int xVec = 1;
     private int yVec = 1;
-	
+
     public BallMoveThread(int num,int x, int y) {
 	id = num;
 	x = 450;
 	y = 450;
     }
-    
+
     @Override
     public void run() {
 	while(true){
@@ -123,7 +129,7 @@ public class Server {
             System.out.println("Send messages to client No." + i);
         }
     }
-    
+
     public static void main(String[] args) {
 
         incoming = new ArrayList<Socket>();
@@ -143,11 +149,11 @@ public class Server {
                 n = incoming.size();
                 incoming.add(server.accept());
                 System.out.println("Accept client No." + n);
-                
+
                 isr.add(new InputStreamReader(incoming.get(n).getInputStream()));
                 in.add(new BufferedReader(isr.get(n)));
                 out.add(new PrintWriter(incoming.get(n).getOutputStream(), true));
-                
+
                 myClientProcThread.add(
                         new ClientProcThread(n, incoming.get(n), isr.get(n), in.get(n), out.get(n)));
                 myClientProcThread.get(n).start(); // start thread
@@ -156,11 +162,10 @@ public class Server {
 		    numBall = myBallMoveThread.size();
 		    myBallMoveThread.add(new BallMoveThread(numBall, 400, 400));
 		    myBallMoveThread.get(numBall).start();
-		} 
+		}
             }
         } catch (Exception e) {
             System.out.println("Error occured when socket was being created: " + e );
         }
     }
 }
-
