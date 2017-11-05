@@ -77,13 +77,13 @@ public class GameMainController implements Initializable {
         MesgRecvThread mrt = new MesgRecvThread(BlockBreak.getSocket(), BlockBreak.getUserName());
         mrt.start();
     }
-    public void PaddleMoveLeft(String ClientNum) {
-      if(ClientNum.equals("0")) underpaddle.setX(underpaddle.getX()-20);
-      if(ClientNum.equals("1")) upperpaddle.setX(upperpaddle.getX()-20);
+    public void PaddleMoveLeft(String SendNum) {
+      if(SendNum.equals("0")) underpaddle.setX(Math.max(underpaddle.getX()-20,150*-1+underpaddle.getWidth()/2));
+      if(SendNum.equals("1")) upperpaddle.setX(Math.max(upperpaddle.getX()-20,150*-1+upperpaddle.getWidth()/2));
     }
-    public void PaddleMoveRight(String ClientNum){
-      if(ClientNum.equals("0")) underpaddle.setX(underpaddle.getX()+20);
-      if(ClientNum.equals("1")) upperpaddle.setX(upperpaddle.getX()+20);
+    public void PaddleMoveRight(String SendNum){
+      if(SendNum.equals("0")) underpaddle.setX(Math.min(underpaddle.getX()+20,150-underpaddle.getWidth()/2));
+      if(SendNum.equals("1")) upperpaddle.setX(Math.min(upperpaddle.getX()+20,150-upperpaddle.getWidth()/2));
     }
 
     public class MesgRecvThread extends Thread {
@@ -101,21 +101,24 @@ public class GameMainController implements Initializable {
             try {
                 InputStreamReader isr = new InputStreamReader(socket.getInputStream());
                 BufferedReader br = new BufferedReader(isr);
+
                 myOut = new PrintWriter(socket.getOutputStream(), true);
                 myOut.println(myName);
                 while(true) {
                     String inputLine = br.readLine();
                     if(inputLine != null) {
+
                         System.out.println(inputLine);
                         String[] inputTokens = inputLine.split(",",-1);
                         String cmd = inputTokens[0];
                         System.out.println(cmd);
 
+
                     System.out.println(inputTokens.length);
-                        if(cmd.equals("Paddle")){
+                      if(cmd.equals("Paddle")){
                           String cmd2 = inputTokens[1];
                           String cmd3 = inputTokens[2];
-                        System.out.println(cmd2+"です");
+
                           if(cmd2.equals("LEFT")){
                             PaddleMoveLeft(cmd3);
                         }
@@ -123,7 +126,7 @@ public class GameMainController implements Initializable {
                             PaddleMoveRight(cmd3);
                         }
                       }
-                        if(cmd.equals("Ball")){
+                      if(cmd.equals("Ball")){
                             ball.setCenterX(Integer.parseInt(inputTokens[2]));
 			                      ball.setCenterY(Integer.parseInt(inputTokens[3]));
                         }

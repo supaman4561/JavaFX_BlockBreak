@@ -43,6 +43,7 @@ class ClientProcThread extends Thread {
     public void run() {
         try {
             myOut.println("Hello, client No." + number + "!");
+        
 
             myName = myIn.readLine();
 
@@ -58,7 +59,7 @@ class ClientProcThread extends Thread {
                     Server.SendAll(str);
                     keycode =str;
                   }
-              String paddle = new String("Paddle,"+keycode+","+String.valueOf(number));
+              String paddle = new String("Paddle,"+keycode+","+number);
               Server.SendAll(paddle);
             }
         } catch (IOException e) {
