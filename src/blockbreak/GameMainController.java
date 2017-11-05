@@ -74,7 +74,12 @@ public class GameMainController implements Initializable {
           block.add(new Block(i,j,(i+j)%4));
         }
       }
-//      block = new Rectangle();
+      for (int j=24; j<28; j++) {
+        for (int i=0; i<5; i++) {
+          block.add(new Block(i,j,(i+j)%4));
+        }
+      }
+
         MesgRecvThread mrt = new MesgRecvThread(BlockBreak.getSocket(), BlockBreak.getUserName());
         mrt.start();
     }
@@ -104,8 +109,8 @@ public class GameMainController implements Initializable {
                         String[] inputTokens = inputLine.split(",");
                         String cmd = inputTokens[0];
                        if(cmd.equals("Block")){
-                            Block.delete(block.get(8));
-                            Block.draw(block.get(8));
+                            //Block.delete(block.get(19));
+                            //Block.draw(block.get(19));
                       }
                     }else{
                         break;
