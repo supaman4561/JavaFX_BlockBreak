@@ -148,7 +148,7 @@ public void run() {
           if (inputTokens[1].equals(myName)) {
           }
           else {
-            EnemyPaddle.setX(Float.valueOf(inputTokens[2]));
+            EnemyPaddle.setX(-1.0*Float.valueOf(inputTokens[2]));
           }
         }
       }
@@ -156,7 +156,6 @@ public void run() {
         break;
       }
       mySpeed = MovePaddle(MyPaddle, mySpeed);
-      
     }
     socket.close();
   }
