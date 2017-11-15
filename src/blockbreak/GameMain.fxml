@@ -14,8 +14,8 @@
     <Text fx:id="myName" layoutX="300.0" layoutY="620.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" textAlignment="RIGHT" />
     <Pane fx:id="root" layoutX="10.0" layoutY="23.0" prefHeight="600.0" prefWidth="300.0" style="-fx-background-color: white;&#10;">
          <children>
-            <Rectangle fx:id="upperpaddle" arcHeight="5.0" arcWidth="5.0" fill="DODGERBLUE" height="5.0" layoutX="120.0" layoutY="118.0" stroke="BLACK" strokeType="INSIDE" width="60.0" />
-            <Rectangle fx:id="underpaddle" arcHeight="5.0" arcWidth="5.0" fill="DODGERBLUE" height="5.0" layoutX="120.0" layoutY="499.0" stroke="BLACK" strokeType="INSIDE" width="60.0" />
+            <Rectangle fx:id="EnemyPaddle" arcHeight="5.0" arcWidth="5.0" fill="DODGERBLUE" height="5.0" layoutX="120.0" layoutY="118.0" stroke="BLACK" strokeType="INSIDE" width="60.0" />
+            <Rectangle fx:id="MyPaddle" arcHeight="5.0" arcWidth="5.0" fill="DODGERBLUE" height="5.0" layoutX="120.0" layoutY="499.0" stroke="BLACK" strokeType="INSIDE" width="60.0" />
          </children></Pane>
   </children>
 </AnchorPane>
