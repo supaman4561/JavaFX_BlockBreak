@@ -45,6 +45,7 @@ public class GameMainController implements Initializable {
     /**
      * for sending to Server
      */
+    int id;
     Circle ball;
     PrintWriter myOut;
 
@@ -93,13 +94,21 @@ public class GameMainController implements Initializable {
                 while(true) {
                     String inputLine = br.readLine();
                     if(inputLine != null) {
-                        System.out.println(inputLine);
+                        //System.out.println(inputLine);
                         String[] inputTokens = inputLine.split(",");
                         String cmd = inputTokens[0];
-                        if(cmd.equals("Ball")){
-                            ball.setCenterX(Integer.parseInt(inputTokens[2]));
-			    ball.setCenterY(Integer.parseInt(inputTokens[3]));
-                        }
+			if(cmd.equals("Hello")){
+			    id = Integer.parseInt(inputTokens[1]);
+			}
+			if(cmd.equals("Ball")){
+			    if(id == 0){
+				ball.setCenterX(Integer.parseInt(inputTokens[2]));
+				ball.setCenterY(Integer.parseInt(inputTokens[3]));
+			    } else {
+				ball.setCenterX(root.getWidth() - Integer.parseInt(inputTokens[2]));
+				ball.setCenterY(root.getHeight() - Integer.parseInt(inputTokens[3]));
+			    }
+			}
                     }else{
                         break;
                     }
@@ -139,8 +148,6 @@ public class GameMainController implements Initializable {
         // TODO
         myName.setText(BlockBreak.getUserName());
 	root.getChildren().add(ball);
-    }    
-    
-    
+    }        
     
 }

@@ -42,7 +42,7 @@ class ClientProcThread extends Thread {
     @Override
     public void run() {
         try { 
-            myOut.println("Hello, client No." + number + "!");
+            myOut.println("Hello," + number);
             
             myName = myIn.readLine();
             
@@ -152,7 +152,8 @@ public class Server {
                         new ClientProcThread(n, incoming.get(n), isr.get(n), in.get(n), out.get(n)));
                 myClientProcThread.get(n).start(); // start thread
 
-		if(myClientProcThread.size() == 2){
+		if(myClientProcThread.size() == maxConnection){
+		    // start wait
 		    numBall = myBallMoveThread.size();
 		    myBallMoveThread.add(new BallMoveThread(numBall, 400, 400));
 		    myBallMoveThread.get(numBall).start();
