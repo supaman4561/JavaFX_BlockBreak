@@ -29,6 +29,11 @@ class ClientProcThread extends Thread {
     private PrintWriter myOut;
     private String myName;
 
+    int x[] = new int[40];
+    int y[] = new int[40];
+    int flag[] = new int[40];
+    int k = 0;
+
     public  ClientProcThread(int n, Socket i, InputStreamReader isr,
                                 BufferedReader in, PrintWriter out) {
         number = n;
@@ -37,20 +42,40 @@ class ClientProcThread extends Thread {
         myIn = in;
         myOut = out;
 
+        for(int j=0; j<28; j++){
+          for(int l=0; l<5; l++){
+            x[k] = l*50+25;
+            y[k] = j*20+20;
+            flag[k] = 1;
+            k++;
+          }
+          if(j==3)
+            j=23;
+        }
     }
 
     @Override
     public void run() {
-        try {
+      try {
             myOut.println("Hello, client No." + number + "!");
 
             myName = myIn.readLine();
+
+            //block?generate
+            for(int b=0; b<40; b++){
+              myOut.println("Blockset," + x[b] + "," + y[b] + "," + b + "," + number);
+            }
+            //blockdelete
+            int b = 30;
+            myOut.println("Blockdelete," + number + "," + b);
+            flag[b] = 0;
 
             // watching input to socket
             while(true) {
                 String str = myIn.readLine();
                 System.out.println("Receive from client No." + number +
                                    "(" + myName + "), Messages: " + str);
+
                 if(str != null) {
                     Server.SendAll(str);
                 }
@@ -61,31 +86,7 @@ class ClientProcThread extends Thread {
     }
 }
 
-class BlockThread extends Thread {
-    private int id;
-    private int x;
-    private int y;
-    private int xVec;
-    private int yVec;
-    public BlockThread(int num,int x, int y) {
-	id = num;
-	x = 450;
-	y = 450;
-    }
 
-    @Override
-    public void run() {
-	     while(true){
-         String str = new String("Block");
-	       Server.SendAll(str);
-	       try{
-		         Thread.sleep(16);
-	       } catch (InterruptedException e) {
-		         e.printStackTrace();
-	       }
-	     }
-    }
-}
 
 public class Server {
 
@@ -95,7 +96,6 @@ public class Server {
     private static ArrayList<BufferedReader> in;
     private static ArrayList<PrintWriter> out;
     private static ArrayList<ClientProcThread> myClientProcThread;
-    private static ArrayList<BlockThread> myBlockThread;
 
     public static void SendAll(String str){
         for(int i=0; i<incoming.size(); i++){
@@ -112,10 +112,8 @@ public class Server {
         in = new ArrayList<BufferedReader>();
         out = new ArrayList<PrintWriter>();
         myClientProcThread = new ArrayList<ClientProcThread>();
-	myBlockThread = new ArrayList<BlockThread>();
 
         int n;
-	int numBlock=0;
 
         try {
             System.out.println("The server has launched!");
@@ -134,9 +132,10 @@ public class Server {
                 myClientProcThread.get(n).start(); // start thread
 
 		if(myClientProcThread.size() == 2){
-		    numBlock = myBlockThread.size();
+		    /*numBlock = myBlockThread.size();
 		    myBlockThread.add(new BlockThread(numBlock, 400, 400));
-		    myBlockThread.get(numBlock).start();
+		    myBlockThread.get(numBlock).start();*/
+
 		}
             }
         } catch (Exception e) {

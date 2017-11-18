@@ -47,7 +47,9 @@ public class GameMainController implements Initializable {
     /**
      * for sending to Server
      */
-    ArrayList<Block> block = new ArrayList<Block>();
+    ArrayList<Rectangle> myblock = new ArrayList<Rectangle>();
+    ArrayList<Rectangle> enemyblock = new ArrayList<Rectangle>();
+
     PrintWriter myOut;
 
     static {
@@ -69,15 +71,10 @@ public class GameMainController implements Initializable {
     }
 
     public GameMainController() {
-      for (int j=0; j<4; j++) {
-        for (int i=0; i<5; i++) {
-          block.add(new Block(i,j,(i+j)%4));
-        }
-      }
-      for (int j=24; j<28; j++) {
-        for (int i=0; i<5; i++) {
-          block.add(new Block(i,j,(i+j)%4));
-        }
+
+      for (int i=0; i<20; i++){
+        myblock.add(new Rectangle());
+        enemyblock.add(new Rectangle());
       }
 
         MesgRecvThread mrt = new MesgRecvThread(BlockBreak.getSocket(), BlockBreak.getUserName());
@@ -108,10 +105,100 @@ public class GameMainController implements Initializable {
                         System.out.println(inputLine);
                         String[] inputTokens = inputLine.split(",");
                         String cmd = inputTokens[0];
-                       if(cmd.equals("Block")){
-                            //Block.delete(block.get(19));
-                            //Block.draw(block.get(19));
-                      }
+
+                       if(cmd.equals("Blockset")){
+                         int x = Integer.parseInt(inputTokens[1]);
+                         int y = Integer.parseInt(inputTokens[2]);
+                         int b = Integer.parseInt(inputTokens[3]);
+                         int num = Integer.parseInt(inputTokens[4]);
+
+                         num %= 2;
+                         if((b<20&&num==0)||(b>=20&&num==1)){
+                           if(b>=20){
+                             b-=20;
+
+                           if(num==1){
+                             x = 300-x-50;
+                             y = 600-y-20;
+                           }
+                           }
+                           enemyblock.get(b).setX(x);
+                           enemyblock.get(b).setY(y);
+                           enemyblock.get(b).setWidth(50);
+                           enemyblock.get(b).setHeight(20);
+                           switch(b%5){
+                             case 0:
+                              enemyblock.get(b).setFill(Color.RED);
+                              break;
+                             case 1:
+                              enemyblock.get(b).setFill(Color.BLUE);
+                              break;
+                            case 2:
+                              enemyblock.get(b).setFill(Color.YELLOW);
+                              break;
+                            case 3:
+                              enemyblock.get(b).setFill(Color.GREEN);
+                              break;
+                            case 4:
+                              enemyblock.get(b).setFill(Color.ORANGE);
+                              break;
+                            }
+                            enemyblock.get(b).setStroke(Color.BLACK);
+                            enemyblock.get(b).setStrokeWidth(1);
+                          }else{
+                            if(b>=20){
+                              b-=20;
+                            }
+                            if(num==1){
+                              x = 300-x-50;
+                              y = 600-y-20;
+                          }
+                            myblock.get(b).setX(x);
+                            myblock.get(b).setY(y);
+                            myblock.get(b).setWidth(50);
+                            myblock.get(b).setHeight(20);
+                            switch(b%5){
+                              case 0:
+                                myblock.get(b).setFill(Color.RED);
+                                break;
+                              case 1:
+                                myblock.get(b).setFill(Color.BLUE);
+                                break;
+                              case 2:
+                                myblock.get(b).setFill(Color.YELLOW);
+                                break;
+                              case 3:
+                                myblock.get(b).setFill(Color.GREEN);
+                                break;
+                              case 4:
+                                myblock.get(b).setFill(Color.ORANGE);
+                                break;
+                              }
+                              myblock.get(b).setStroke(Color.BLACK);
+                              myblock.get(b).setStrokeWidth(1);
+                            }
+                          }else if(cmd.equals("Blockdelete")){
+                            int num = Integer.parseInt(inputTokens[1]);
+                            int b = Integer.parseInt(inputTokens[2]);
+                            num %= 2;
+                            if((b<20&&num==0)||(b>=20&&num==1)){
+                              if(b>=20){
+                                b-=20;
+                              }
+                                enemyblock.get(b).setFill(Color.WHITE);
+                                enemyblock.get(b).setStroke(Color.WHITE);
+                              }else{
+                                if(b>=20){
+                                  b-=20;
+                                }
+                                  myblock.get(b).setFill(Color.WHITE);
+                                  myblock.get(b).setStroke(Color.WHITE);
+
+                              }
+                            }
+                          
+
+
                     }else{
                         break;
                     }
@@ -150,14 +237,16 @@ public class GameMainController implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         // TODO
         myName.setText(BlockBreak.getUserName());
-	      root.getChildren().addAll(block);
+	      root.getChildren().addAll(myblock);
+        root.getChildren().addAll(enemyblock);
+
     }
 
 
 
 }
 
-class Block extends Rectangle {
+/*class Block extends Rectangle {
   private boolean flag=true;
 
     public Block(double x,double y,int color) {
@@ -187,4 +276,4 @@ class Block extends Rectangle {
         block.setFill(Color.WHITE);
       }
     }
-	}
+	}*/
