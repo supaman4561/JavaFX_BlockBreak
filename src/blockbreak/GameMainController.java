@@ -104,6 +104,7 @@ public float MovePaddle(Rectangle Paddle, float mySpeed) {
 public class MesgRecvThread extends Thread {
 Socket socket;
 String myName;
+String myNumber = "";
 float mySpeed = 0;
 
 public MesgRecvThread(Socket s, String n) {
@@ -128,16 +129,15 @@ public void run() {
 
         System.out.println("First word:" + cmd);
 
-
+        if(cmd.equals("Hello")){
+          myNumber = inputTokens[2];
+          System.out.println(myNumber);
+        }
 
         if (cmd.equals("Paddle")) {
-          String cmd2 = inputTokens[1];
-          String cmd3 = inputTokens[2];
-          if (cmd3.equals(myName)) {
-            if (cmd2.equals("LEFT")) mySpeed = MoveLeft(MyPaddle, mySpeed);
-            if (cmd2.equals("RIGHT")) mySpeed =  MoveRight(MyPaddle, mySpeed);
-          }
-          String SendMesg = new String("Paddle," + myName + "," + MyPaddle.getX());
+          if (inputTokens[1].equals("LEFT")) mySpeed = MoveLeft(MyPaddle, mySpeed);
+          if (inputTokens[1].equals("RIGHT")) mySpeed =  MoveRight(MyPaddle, mySpeed);
+          String SendMesg = new String("Paddle," + myNumber + "," + MyPaddle.getX());
           myOut.println(SendMesg);
         }
         if (cmd.equals("Ball")) {
@@ -145,11 +145,7 @@ public void run() {
           ball.setCenterY(Integer.parseInt(inputTokens[3]));
         }
         if (cmd.equals("EnemyPaddle")) {
-          if (inputTokens[1].equals(myName)) {
-          }
-          else {
-            EnemyPaddle.setX(-1.0*Float.valueOf(inputTokens[2]));
-          }
+          EnemyPaddle.setX(-1.0*Float.valueOf(inputTokens[2]));
         }
       }
       else {

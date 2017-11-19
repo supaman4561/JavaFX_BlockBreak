@@ -41,7 +41,7 @@ public ClientProcThread(int n, Socket i, InputStreamReader isr,
 @Override
 public void run() {
   try {
-    myOut.println("Hello, client No." + number + "!");
+    myOut.println("Hello, client No." + "," +number + "," + "!");
 
 
     myName = myIn.readLine();
@@ -56,14 +56,13 @@ public void run() {
                          "(" + myName + "), Messages: " + str);
       if (str != null) {
         if (input[0].equals("Paddle")) {
-          String enemy = new String("EnemyPaddle," + myName + "," + input[2]);
-          Server.SendAll(enemy);
-        }
-        else {
+          String enemy = new String("EnemyPaddle," + number + "," + input[2]);
+          Server.SendAll(enemy,1 - number);
+      }else {
           Server.SendAll(str);
           keycode = str;
-          String paddle = new String("Paddle," + keycode + "," + myName);
-          Server.SendAll(paddle);
+          String paddle = new String("Paddle," + keycode + "," + number);
+          Server.SendAll(paddle,number);
         }
       }
 
@@ -141,6 +140,12 @@ public static void SendAll(String str) {
     out.get(i).flush();
     System.out.println("Send messages to client No." + i);
   }
+}
+
+public static void SendAll(String str,int destNum){
+  out.get(destNum).println(str);
+  out.get(destNum).flush();
+  System.out.println("Send messages to client No." + destNum);
 }
 
 public static void main(String[] args) {
