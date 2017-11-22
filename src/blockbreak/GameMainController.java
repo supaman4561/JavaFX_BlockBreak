@@ -8,6 +8,7 @@ package blockbreak;
 import java.io.*;
 import java.net.*;
 import java.util.ResourceBundle;
+import java.util.ArrayList;
 import javafx.fxml.*;
 import javafx.scene.*;
 import javafx.scene.layout.*;
@@ -45,7 +46,11 @@ public class GameMainController implements Initializable {
     /**
      * for sending to Server
      */
+    int id;
     Circle ball;
+    ArrayList<Rectangle> myblock = new ArrayList<Rectangle>();
+    ArrayList<Rectangle> enemyblock = new ArrayList<Rectangle>();
+    
     PrintWriter myOut;
 
     static {
@@ -67,9 +72,17 @@ public class GameMainController implements Initializable {
     }
     
     public GameMainController() {
+	
         ball = new Circle(5.0);
-        MesgRecvThread mrt = new MesgRecvThread(BlockBreak.getSocket(), BlockBreak.getUserName());
+
+	for (int i=0; i<20; i++){
+	    myblock.add(new Rectangle());
+	    enemyblock.add(new Rectangle());
+	}
+	
+	MesgRecvThread mrt = new MesgRecvThread(BlockBreak.getSocket(), BlockBreak.getUserName());
         mrt.start();
+
     }
     
     public class MesgRecvThread extends Thread {
@@ -93,13 +106,115 @@ public class GameMainController implements Initializable {
                 while(true) {
                     String inputLine = br.readLine();
                     if(inputLine != null) {
-                        System.out.println(inputLine);
+			// for debug
+                        // System.out.println(inputLine);
                         String[] inputTokens = inputLine.split(",");
                         String cmd = inputTokens[0];
-                        if(cmd.equals("Ball")){
-                            ball.setCenterX(Integer.parseInt(inputTokens[2]));
-			    ball.setCenterY(Integer.parseInt(inputTokens[3]));
-                        }
+			if(cmd.equals("Hello")){
+			    id = Integer.parseInt(inputTokens[1]);
+			}else if(cmd.equals("Ball")){
+                            if(id == 0){
+				ball.setCenterX(Integer.parseInt(inputTokens[2]));
+				ball.setCenterY(Integer.parseInt(inputTokens[3]));
+			    } else {
+				ball.setCenterX(root.getWidth() - Integer.parseInt(inputTokens[2]));
+				ball.setCenterY(root.getHeight() - Integer.parseInt(inputTokens[3]));
+			    }
+                        }else if(cmd.equals("Blockset")){
+			    int x = Integer.parseInt(inputTokens[1]);
+			    int y = Integer.parseInt(inputTokens[2]);
+			    int b = Integer.parseInt(inputTokens[3]);
+			    int num = Integer.parseInt(inputTokens[4]);
+
+			    num %= 2;
+			    if((b<20&&num==0)||(b>=20&&num==1)){
+				if(b>=20){
+				    b-=20;
+
+				    if(num==1){
+					x = 300-x-50;
+					y = 600-y-20;
+				    }
+				}
+				enemyblock.get(b).setX(x);
+				enemyblock.get(b).setY(y);
+				enemyblock.get(b).setWidth(50);
+				enemyblock.get(b).setHeight(20);
+				switch(b%5){
+				case 0:
+				    enemyblock.get(b).setFill(Color.RED);
+				    break;
+				case 1:
+				    enemyblock.get(b).setFill(Color.BLUE);
+				    break;
+				case 2:
+				    enemyblock.get(b).setFill(Color.YELLOW);
+				    break;
+				case 3:
+				    enemyblock.get(b).setFill(Color.GREEN);
+				    break;
+				case 4:
+				    enemyblock.get(b).setFill(Color.ORANGE);
+				    break;
+				}
+				enemyblock.get(b).setStroke(Color.BLACK);
+				enemyblock.get(b).setStrokeWidth(1);
+			    }else{
+				if(b>=20){
+				    b-=20;
+				}
+				if(num==1){
+				    x = 300-x-50;
+				    y = 600-y-20;
+				}
+				myblock.get(b).setX(x);
+				myblock.get(b).setY(y);
+				myblock.get(b).setWidth(50);
+				myblock.get(b).setHeight(20);
+				switch(b%5){
+				case 0:
+				    myblock.get(b).setFill(Color.RED);
+				    break;
+				case 1:
+				    myblock.get(b).setFill(Color.BLUE);
+				    break;
+				case 2:
+				    myblock.get(b).setFill(Color.YELLOW);
+				    break;
+				case 3:
+				    myblock.get(b).setFill(Color.GREEN);
+				    break;
+				case 4:
+				    myblock.get(b).setFill(Color.ORANGE);
+				    break;
+				}
+				myblock.get(b).setStroke(Color.BLACK);
+				myblock.get(b).setStrokeWidth(1);
+                            }
+			}else if(cmd.equals("Blockdelete")){
+                            int num = Integer.parseInt(inputTokens[1]);
+                            int b = Integer.parseInt(inputTokens[2]);
+                            num %= 2;
+                            if((b<20&&num==0)||(b>=20&&num==1)){
+				if(b>=20){
+				    b-=20;
+				}
+				root.getChildren().remove(enemyblock.get(b));
+                                //enemyblock.get(b).setFill(Color.WHITE);
+                                //enemyblock.get(b).setStroke(Color.WHITE);
+			    }else{
+                                if(b>=20){
+				    b-=20;
+                                }
+				root.getChildren().remove(myblock.get(b));
+				//myblock.get(b).setFill(Color.WHITE);
+				//myblock.get(b).setStroke(Color.WHITE);
+
+			    }
+			}
+                          
+
+
                     }else{
                         break;
                     }
@@ -139,6 +254,8 @@ public class GameMainController implements Initializable {
         // TODO
         myName.setText(BlockBreak.getUserName());
 	root.getChildren().add(ball);
+	root.getChildren().addAll(myblock);
+	root.getChildren().addAll(enemyblock);
     }    
     
     

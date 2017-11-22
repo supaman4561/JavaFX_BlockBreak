@@ -28,24 +28,54 @@ class ClientProcThread extends Thread {
     private BufferedReader myIn;
     private PrintWriter myOut;
     private String myName;
+
+    int x[] = new int[40];
+    int y[] = new int[40];
+    int flag[] = new int[40];
+    int k = 0;
     
-    public  ClientProcThread(int n, Socket i, InputStreamReader isr,
-                                BufferedReader in, PrintWriter out) {
+    public ClientProcThread(int n, Socket i, InputStreamReader isr,
+			     BufferedReader in, PrintWriter out) {
         number = n;
         incoming = i;
         myIsr = isr;
         myIn = in;
         myOut = out;
-        
+
+	for(int j=0; j<28; j++){
+
+	    for(int l=0; l<5; l++){
+		x[k] = l*50+25;
+		y[k] = j*20+20;
+		flag[k] = 1;
+		k++;
+	    }
+	    
+	    if(j==3){
+		j=23;
+	    }
+	    
+	}
+    }
+
+    public void generateBlock(){
+	for(int b=0; b<40; b++){
+	    myOut.println("Blockset," + x[b] + "," + y[b] + "," + b + "," + number);
+	}
+    }
+
+    public void deleteBlock(int target){
+	myOut.println("Blockdelete," + number + "," + target);
+	flag[target] = 0;
     }
     
     @Override
     public void run() {
         try { 
-            myOut.println("Hello, client No." + number + "!");
+            myOut.println("Hello," + number);
             
             myName = myIn.readLine();
-            
+
             // watching input to socket
             while(true) {
                 String str = myIn.readLine();
@@ -54,6 +84,7 @@ class ClientProcThread extends Thread {
                 if(str != null) {
                     Server.SendAll(str);
                 }
+
             }
         } catch (IOException e) {
             
@@ -150,9 +181,16 @@ public class Server {
                 
                 myClientProcThread.add(
                         new ClientProcThread(n, incoming.get(n), isr.get(n), in.get(n), out.get(n)));
-                myClientProcThread.get(n).start(); // start thread
 
+		myClientProcThread.get(n).start(); // start thread
+		
 		if(myClientProcThread.size() == 2){
+
+		    for(int i=0; i<2; i++){
+			myClientProcThread.get(i).generateBlock();
+			myClientProcThread.get(i).deleteBlock(30);
+		    }
+		    
 		    numBall = myBallMoveThread.size();
 		    myBallMoveThread.add(new BallMoveThread(numBall, 400, 400));
 		    myBallMoveThread.get(numBall).start();
