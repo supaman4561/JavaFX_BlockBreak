@@ -46,10 +46,6 @@ class ClientProcThread extends Thread {
 			  + "," + target.getY() + "," + id + "," + number);
 	}
     }
-
-    public void deleteBlock(int target){
-	myOut.println("Blockdelete," + number + "," + target);
-    }
     
     @Override
     public void run() {
@@ -81,7 +77,7 @@ class BallMoveThread extends Thread {
     private int y;
     private int xVec = 1;
     private int yVec = 1;
-    private ArraryList<Block> blockArray;
+    private ArrayList<Block> blockArray;
 	
     public BallMoveThread(int num,int x, int y, ArrayList<Block> blockArray) {
 	id = num;
@@ -94,9 +90,9 @@ class BallMoveThread extends Thread {
     public void run() {
 	while(true){
 	    move();
-	    watchCollision();
 	    String str = new String("Ball," + id + "," + x + "," + y + ",");
 	    Server.SendAll(str);
+	    watchCollision();
 	    try{
 		Thread.sleep(16);
 	    } catch (InterruptedException e) {
@@ -124,21 +120,42 @@ class BallMoveThread extends Thread {
 
     private void watchCollision(){
 	Block target;
-	for(int i=0; i<blockArray.size(); i++){
-	    // 衝突判定をここで
+	for(int id=0; id<blockArray.size(); id++){
+	    target = blockArray.get(id);
+	    if(target.isAlive()){
+	        if(target.getX() <= this.x && this.x <= target.getX() + target.getWidth() &&
+		   target.getY() <= this.y && this.y <= target.getY() + target.getHeight()  ){
+
+		    target.dead(id);
+		    
+		}
+	    }	
 	}
     }
+    
 }
 
 class Block {
 
     private int x;
     private int y;
+    private int width;
+    private int height;
     private boolean flag;
 
-    Block(int x,int y){
+    Block(int x, int y){
 	this.x = x;
 	this.y = y;
+	this.width = 50;
+	this.height = 20;
+	flag = true;
+    }
+
+    Block(int x, int y, int width, int height){
+	this.x = x;
+	this.y = y;
+	this.width = width;
+	this.height = height;
 	flag = true;
     }
 
@@ -150,11 +167,21 @@ class Block {
 	return this.y;
     }
 
-    public boolean isLive(){
+    public int getWidth(){
+	return width;
+    }
+
+    public int getHeight(){
+	return height;
+    }
+    
+    public boolean isAlive(){
 	return this.flag;
     }
 
-    public void dead(){
+    public void dead(int id){
+	String str = new String("BlockDelete," + id);
+	Server.SendAll(str);
 	flag = false;
     }
 }
@@ -182,12 +209,11 @@ public class Server {
     private static void initBlock(){
 	int xNum = 5;
 	int yNum = 4;
-	int width = 50;
 	int xInterval = 25;
-	int height = 20;
 	int yInterval1 = 20;
 	int yInterval2 = 500;
-	
+	int width = 50;
+	int height = 20;
 	
 	for(int i=0; i<yNum; i++){
 	    for(int j=0; j<xNum; j++){
@@ -240,8 +266,11 @@ public class Server {
 
 		    for(int i=0; i<2; i++){
 			myClientProcThread.get(i).generateBlock(blockArray);
-			myClientProcThread.get(i).deleteBlock(30);
 		    }
+
+		    try{
+			Thread.sleep(1000);
+		    }catch(Exception e){}
 		    
 		    numBall = myBallMoveThread.size();
 		    myBallMoveThread.add(new BallMoveThread(numBall, 400, 400, blockArray));

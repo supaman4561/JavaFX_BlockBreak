@@ -16,6 +16,7 @@ import javafx.scene.shape.*;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
+import javafx.beans.property.*;
 
 /**
  * FXML Controller class
@@ -113,25 +114,19 @@ public class GameMainController implements Initializable {
 			if(cmd.equals("Hello")){
 			    id = Integer.parseInt(inputTokens[1]);
 			}else if(cmd.equals("Ball")){
-                            if(id == 0){
-				ball.setCenterX(Integer.parseInt(inputTokens[2]));
-				ball.setCenterY(Integer.parseInt(inputTokens[3]));
-			    } else {
-				ball.setCenterX(root.getWidth() - Integer.parseInt(inputTokens[2]));
-				ball.setCenterY(root.getHeight() - Integer.parseInt(inputTokens[3]));
-			    }
+                            Thread thread = new BallMoveThread(Integer.parseInt(inputTokens[2]),
+							       Integer.parseInt(inputTokens[3]));
+			    thread.start();
                         }else if(cmd.equals("Blockset")){
 			    int x = Integer.parseInt(inputTokens[1]);
 			    int y = Integer.parseInt(inputTokens[2]);
 			    int b = Integer.parseInt(inputTokens[3]);
-			    int num = Integer.parseInt(inputTokens[4]);
 
-			    num %= 2;
-			    if((b<20&&num==0)||(b>=20&&num==1)){
+			    if((b<20&&id%2==0)||(b>=20&&id%2==1)){
 				if(b>=20){
 				    b-=20;
-
-				    if(num==1){
+		    
+				    if(id%2==1){
 					x = 300-x-50;
 					y = 600-y-20;
 				    }
@@ -163,7 +158,7 @@ public class GameMainController implements Initializable {
 				if(b>=20){
 				    b-=20;
 				}
-				if(num==1){
+				if(id%2==1){
 				    x = 300-x-50;
 				    y = 600-y-20;
 				}
@@ -190,27 +185,12 @@ public class GameMainController implements Initializable {
 				}
 				myblock.get(b).setStroke(Color.BLACK);
 				myblock.get(b).setStrokeWidth(1);
-                            }
-			}else if(cmd.equals("Blockdelete")){
-                            int num = Integer.parseInt(inputTokens[1]);
-                            int b = Integer.parseInt(inputTokens[2]);
-                            num %= 2;
-                            if((b<20&&num==0)||(b>=20&&num==1)){
-				if(b>=20){
-				    b-=20;
-				}
-				root.getChildren().remove(enemyblock.get(b));
-                                //enemyblock.get(b).setFill(Color.WHITE);
-                                //enemyblock.get(b).setStroke(Color.WHITE);
-			    }else{
-                                if(b>=20){
-				    b-=20;
-                                }
-				root.getChildren().remove(myblock.get(b));
-				//myblock.get(b).setFill(Color.WHITE);
-				//myblock.get(b).setStroke(Color.WHITE);
-
 			    }
+			   			    
+			}else if(cmd.equals("BlockDelete")){
+			    int b = Integer.parseInt(inputTokens[1]);
+			    Thread thread = new BlockDeleteThread(b);
+			    thread.start();
 			}
                           
 
@@ -225,7 +205,58 @@ public class GameMainController implements Initializable {
             }
         }
     }
+
+    class BallMoveThread extends Thread{
+
+	private int x;
+	private int y;
+	
+	BallMoveThread(int x, int y){
+	    this.x = x;
+	    this.y = y;
+	}
+	    
+	public void run() {
+	    if(id == 0){
+		ball.setCenterX(x);
+		ball.setCenterY(y);
+	    } else {
+		ball.setCenterX(root.getWidth() - x);
+		ball.setCenterY(root.getHeight() - y);
+	    }
+	}
+    }
+
+    class BlockDeleteThread extends Thread{
+
+	int b;
+
+	BlockDeleteThread(int b){
+	    this.b = b;
+	}
+
+	public void run(){
+	     if((b<20&&id%2==0)||(b>=20&&id%2==1)){
+		 if(b>=20){
+		     b-=20;
+		 }
+		 //root.getChildren().remove(enemyblock.get(b));
+		 enemyblock.get(b).visibleProperty().bind(new SimpleBooleanProperty(false));
+		 //enemyblock.get(b).setStroke(Color.WHITE);
+	     }else{
+		 if(b>=20){
+		     b-=20;
+		 }
+		 //root.getChildren().remove(myblock.get(b));
+		 myblock.get(b).visibleProperty().bind(new SimpleBooleanProperty(false));
+		 //myblock.get(b).setFill(Color.WHITE);
+		 //myblock.get(b).setStroke(Color.WHITE);
+
+	     }
+	}
+    }
     
+	
     /**
      * return instance(singleton)
      * @return INSTANCE
