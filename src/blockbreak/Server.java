@@ -28,11 +28,6 @@ class ClientProcThread extends Thread {
     private BufferedReader myIn;
     private PrintWriter myOut;
     private String myName;
-
-    int x[] = new int[40];
-    int y[] = new int[40];
-    int flag[] = new int[40];
-    int k = 0;
     
     public ClientProcThread(int n, Socket i, InputStreamReader isr,
 			     BufferedReader in, PrintWriter out) {
@@ -41,32 +36,19 @@ class ClientProcThread extends Thread {
         myIsr = isr;
         myIn = in;
         myOut = out;
-
-	for(int j=0; j<28; j++){
-
-	    for(int l=0; l<5; l++){
-		x[k] = l*50+25;
-		y[k] = j*20+20;
-		flag[k] = 1;
-		k++;
-	    }
-	    
-	    if(j==3){
-		j=23;
-	    }
-	    
-	}
     }
-
-    public void generateBlock(){
-	for(int b=0; b<40; b++){
-	    myOut.println("Blockset," + x[b] + "," + y[b] + "," + b + "," + number);
+    
+    public void generateBlock(ArrayList<Block> blockArray){
+	Block target;
+	for(int id=0; id<blockArray.size(); id++){
+	    target = blockArray.get(id);
+	    myOut.println("Blockset," + target.getX()
+			  + "," + target.getY() + "," + id + "," + number);
 	}
     }
 
     public void deleteBlock(int target){
 	myOut.println("Blockdelete," + number + "," + target);
-	flag[target] = 0;
     }
     
     @Override
@@ -79,8 +61,9 @@ class ClientProcThread extends Thread {
             // watching input to socket
             while(true) {
                 String str = myIn.readLine();
-                System.out.println("Receive from client No." + number +
-                                   "(" + myName + "), Messages: " + str);
+		// for debug
+		// System.out.println("Receive from client No." + number +
+                //                    "(" + myName + "), Messages: " + str);
                 if(str != null) {
                     Server.SendAll(str);
                 }
@@ -98,17 +81,20 @@ class BallMoveThread extends Thread {
     private int y;
     private int xVec = 1;
     private int yVec = 1;
+    private ArraryList<Block> blockArray;
 	
-    public BallMoveThread(int num,int x, int y) {
+    public BallMoveThread(int num,int x, int y, ArrayList<Block> blockArray) {
 	id = num;
 	x = 450;
 	y = 450;
+	this.blockArray = blockArray;
     }
     
     @Override
     public void run() {
 	while(true){
 	    move();
+	    watchCollision();
 	    String str = new String("Ball," + id + "," + x + "," + y + ",");
 	    Server.SendAll(str);
 	    try{
@@ -135,6 +121,42 @@ class BallMoveThread extends Thread {
 	x += xVec;
 	y += yVec;
     }
+
+    private void watchCollision(){
+	Block target;
+	for(int i=0; i<blockArray.size(); i++){
+	    // 衝突判定をここで
+	}
+    }
+}
+
+class Block {
+
+    private int x;
+    private int y;
+    private boolean flag;
+
+    Block(int x,int y){
+	this.x = x;
+	this.y = y;
+	flag = true;
+    }
+
+    public int getX(){
+	return this.x;
+    }
+
+    public int getY(){
+	return this.y;
+    }
+
+    public boolean isLive(){
+	return this.flag;
+    }
+
+    public void dead(){
+	flag = false;
+    }
 }
 
 public class Server {
@@ -146,13 +168,40 @@ public class Server {
     private static ArrayList<PrintWriter> out;
     private static ArrayList<ClientProcThread> myClientProcThread;
     private static ArrayList<BallMoveThread> myBallMoveThread;
-
+    private static ArrayList<Block> blockArray;
+    
     public static void SendAll(String str){
         for(int i=0; i<incoming.size(); i++){
             out.get(i).println(str);
             out.get(i).flush();
-            System.out.println("Send messages to client No." + i);
+	    // for debug
+	    // System.out.println("Send messages to client No." + i);
         }
+    }
+
+    private static void initBlock(){
+	int xNum = 5;
+	int yNum = 4;
+	int width = 50;
+	int xInterval = 25;
+	int height = 20;
+	int yInterval1 = 20;
+	int yInterval2 = 500;
+	
+	
+	for(int i=0; i<yNum; i++){
+	    for(int j=0; j<xNum; j++){
+		blockArray.add(new Block(j*width+xInterval,
+					 i*height+yInterval1));
+	    }
+	}
+
+	for(int i=0; i<yNum; i++){
+	    for(int j=0; j<xNum; j++){
+		blockArray.add(new Block(j*width+xInterval,
+					 i*height+yInterval2));
+	    }
+	}
     }
     
     public static void main(String[] args) {
@@ -163,9 +212,12 @@ public class Server {
         out = new ArrayList<PrintWriter>();
         myClientProcThread = new ArrayList<ClientProcThread>();
 	myBallMoveThread = new ArrayList<BallMoveThread>();
+	blockArray = new ArrayList<Block>();
 
         int n;
 	int numBall=0;
+
+	initBlock();
 
         try {
             System.out.println("The server has launched!");
@@ -187,12 +239,12 @@ public class Server {
 		if(myClientProcThread.size() == 2){
 
 		    for(int i=0; i<2; i++){
-			myClientProcThread.get(i).generateBlock();
+			myClientProcThread.get(i).generateBlock(blockArray);
 			myClientProcThread.get(i).deleteBlock(30);
 		    }
 		    
 		    numBall = myBallMoveThread.size();
-		    myBallMoveThread.add(new BallMoveThread(numBall, 400, 400));
+		    myBallMoveThread.add(new BallMoveThread(numBall, 400, 400, blockArray));
 		    myBallMoveThread.get(numBall).start();
 		} 
             }
