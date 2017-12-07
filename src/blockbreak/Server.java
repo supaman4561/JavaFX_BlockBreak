@@ -28,7 +28,7 @@ class ClientProcThread extends Thread {
     private BufferedReader myIn;
     private PrintWriter myOut;
     private String myName;
-    
+
     public ClientProcThread(int n, Socket i, InputStreamReader isr,
 			     BufferedReader in, PrintWriter out) {
         number = n;
@@ -37,7 +37,7 @@ class ClientProcThread extends Thread {
         myIn = in;
         myOut = out;
     }
-    
+
     public void generateBlock(ArrayList<Block> blockArray){
 	Block target;
 	for(int id=0; id<blockArray.size(); id++){
@@ -46,12 +46,12 @@ class ClientProcThread extends Thread {
 			  + "," + target.getY() + "," + id + "," + number);
 	}
     }
-    
+
     @Override
     public void run() {
-        try { 
+        try {
             myOut.println("Hello," + number);
-            
+
             myName = myIn.readLine();
 
             // watching input to socket
@@ -66,31 +66,32 @@ class ClientProcThread extends Thread {
 
             }
         } catch (IOException e) {
-            
+
         }
     }
 }
 
 class BallMoveThread extends Thread {
     private int id;
-    private int x;
-    private int y;
+    private int ballX;
+    private int ballY;
+    private int radius = 5;
     private int xVec = 1;
     private int yVec = 1;
     private ArrayList<Block> blockArray;
-	
+
     public BallMoveThread(int num,int x, int y, ArrayList<Block> blockArray) {
 	id = num;
-	x = 450;
-	y = 450;
+	ballX = x;
+	ballY = y;
 	this.blockArray = blockArray;
     }
-    
+
     @Override
     public void run() {
 	while(true){
 	    move();
-	    String str = new String("Ball," + id + "," + x + "," + y + ",");
+	    String str = new String("Ball," + id + "," + ballX + "," + ballY + ",");
 	    Server.SendAll(str);
 	    watchCollision();
 	    try{
@@ -102,37 +103,73 @@ class BallMoveThread extends Thread {
     }
 
     private void move() {
-        if(x < 5){
+        if(ballX < 5){
 	    xVec = 2;
-	}else if(x > 295){
+	}else if(ballX > 295){
 	    xVec = -2;
 	}
 
-	if(y < 5){
+	if(ballY < 5){
 	    yVec = 3;
-	}else if(y > 595){
+	}else if(ballY > 595){
 	    yVec = -3;
 	}
 
-	x += xVec;
-	y += yVec;
+	ballX += xVec;
+	ballY += yVec;
     }
 
     private void watchCollision(){
-	Block target;
-	for(int id=0; id<blockArray.size(); id++){
-	    target = blockArray.get(id);
-	    if(target.isAlive()){
-	        if(target.getX() <= this.x && this.x <= target.getX() + target.getWidth() &&
-		   target.getY() <= this.y && this.y <= target.getY() + target.getHeight()  ){
 
-		    target.dead(id);
-		    
-		}
-	    }	
-	}
+	    Block target;
+        boolean deathFlag;
+        int blockX;
+        int blockY;
+        int bWidth;
+        int bHeight;
+
+	    for(int id=0; id<blockArray.size(); id++){
+            target = blockArray.get(id);
+            deathFlag = target.isAlive();
+            if(deathFlag){
+                blockX = target.getX();
+                blockY = target.getY();
+                bWidth = target.getWidth();
+                bHeight = target.getHeight();
+
+                // collision to block
+                // up & down
+                if(blockX <= ballX && ballX <= (blockX + bWidth)){
+
+                    if((blockY <= (ballY + radius) && (ballY + radius) <= (blockY + bHeight)) ||
+                        (blockY <= (ballY - radius) && (ballY - radius) <= (blockY + bHeight))){
+
+                        yVec *= -1;
+                        deathFlag = false;
+                    }
+
+
+                }
+
+                // left & right
+                if(blockY <= ballY && ballY <= (blockY + bHeight)){
+
+                    if((blockX <= (ballX + radius) && (ballX + radius) <= (blockX + bWidth)) ||
+                        (blockX <= (ballX - radius) && (ballX - radius) <= (blockX + bWidth))){
+
+                        xVec *= -1;
+                        deathFlag = false;
+                    }
+                }
+
+                if(deathFlag == false){
+                    target.dead(id);
+                }
+
+	        }
+	    }
     }
-    
+
 }
 
 class Block {
@@ -174,7 +211,7 @@ class Block {
     public int getHeight(){
 	return height;
     }
-    
+
     public boolean isAlive(){
 	return this.flag;
     }
@@ -196,7 +233,7 @@ public class Server {
     private static ArrayList<ClientProcThread> myClientProcThread;
     private static ArrayList<BallMoveThread> myBallMoveThread;
     private static ArrayList<Block> blockArray;
-    
+
     public static void SendAll(String str){
         for(int i=0; i<incoming.size(); i++){
             out.get(i).println(str);
@@ -214,7 +251,7 @@ public class Server {
 	int yInterval2 = 500;
 	int width = 50;
 	int height = 20;
-	
+
 	for(int i=0; i<yNum; i++){
 	    for(int j=0; j<xNum; j++){
 		blockArray.add(new Block(j*width+xInterval,
@@ -229,7 +266,7 @@ public class Server {
 	    }
 	}
     }
-    
+
     public static void main(String[] args) {
 
         incoming = new ArrayList<Socket>();
@@ -252,16 +289,16 @@ public class Server {
                 n = incoming.size();
                 incoming.add(server.accept());
                 System.out.println("Accept client No." + n);
-                
+
                 isr.add(new InputStreamReader(incoming.get(n).getInputStream()));
                 in.add(new BufferedReader(isr.get(n)));
                 out.add(new PrintWriter(incoming.get(n).getOutputStream(), true));
-                
+
                 myClientProcThread.add(
                         new ClientProcThread(n, incoming.get(n), isr.get(n), in.get(n), out.get(n)));
 
 		myClientProcThread.get(n).start(); // start thread
-		
+
 		if(myClientProcThread.size() == 2){
 
 		    for(int i=0; i<2; i++){
@@ -269,17 +306,16 @@ public class Server {
 		    }
 
 		    try{
-			Thread.sleep(1000);
+			Thread.sleep(5000);
 		    }catch(Exception e){}
-		    
+
 		    numBall = myBallMoveThread.size();
 		    myBallMoveThread.add(new BallMoveThread(numBall, 400, 400, blockArray));
 		    myBallMoveThread.get(numBall).start();
-		} 
+		}
             }
         } catch (Exception e) {
             System.out.println("Error occured when socket was being created: " + e );
         }
     }
 }
-
