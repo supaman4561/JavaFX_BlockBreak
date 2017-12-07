@@ -39,12 +39,12 @@ class ClientProcThread extends Thread {
     }
 
     public void generateBlock(ArrayList<Block> blockArray){
-	Block target;
-	for(int id=0; id<blockArray.size(); id++){
-	    target = blockArray.get(id);
-	    myOut.println("Blockset," + target.getX()
-			  + "," + target.getY() + "," + id + "," + number);
-	}
+    	Block target;
+    	for(int id=0; id<blockArray.size(); id++){
+    	    target = blockArray.get(id);
+    	    myOut.println("Blockset," + target.getX()
+    			  + "," + target.getY() + "," + id + "," + number);
+    	}
     }
 
     @Override
@@ -274,8 +274,8 @@ public class Server {
         in = new ArrayList<BufferedReader>();
         out = new ArrayList<PrintWriter>();
         myClientProcThread = new ArrayList<ClientProcThread>();
-	myBallMoveThread = new ArrayList<BallMoveThread>();
-	blockArray = new ArrayList<Block>();
+	    myBallMoveThread = new ArrayList<BallMoveThread>();
+	    blockArray = new ArrayList<Block>();
 
         int n;
 	int numBall=0;
@@ -297,22 +297,22 @@ public class Server {
                 myClientProcThread.add(
                         new ClientProcThread(n, incoming.get(n), isr.get(n), in.get(n), out.get(n)));
 
-		myClientProcThread.get(n).start(); // start thread
+		        myClientProcThread.get(n).start(); // start thread
 
-		if(myClientProcThread.size() == 2){
+		        if(myClientProcThread.size() == 2){
 
-		    for(int i=0; i<2; i++){
-			myClientProcThread.get(i).generateBlock(blockArray);
-		    }
+		            for(int i=0; i<2; i++){
+			              myClientProcThread.get(i).generateBlock(blockArray);
+		            }
 
-		    try{
-			Thread.sleep(5000);
-		    }catch(Exception e){}
+		            try{
+			            Thread.sleep(5000);
+                    }catch(Exception e){}
 
-		    numBall = myBallMoveThread.size();
-		    myBallMoveThread.add(new BallMoveThread(numBall, 400, 400, blockArray));
-		    myBallMoveThread.get(numBall).start();
-		}
+                    numBall = myBallMoveThread.size();
+                    myBallMoveThread.add(new BallMoveThread(numBall, 400, 400, blockArray));
+                    myBallMoveThread.get(numBall).start();
+                }
             }
         } catch (Exception e) {
             System.out.println("Error occured when socket was being created: " + e );

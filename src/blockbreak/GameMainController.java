@@ -24,21 +24,21 @@ import javafx.beans.property.*;
  * @author PCUser
  */
 public class GameMainController implements Initializable {
-    
+
     @FXML
     private Text myName;
-    
+
     @FXML
     private Text opponentName;
 
     @FXML
     private Pane root;
-    
+
     /**
      * instanvce(singleton)
      */
     private static final GameMainController INSTANCE;
-    
+
     /**
      * Scene(singleton)
      */
@@ -47,11 +47,12 @@ public class GameMainController implements Initializable {
     /**
      * for sending to Server
      */
+    private static Socket mainSocket = null;
     int id;
     Circle ball;
     ArrayList<Rectangle> myblock = new ArrayList<Rectangle>();
     ArrayList<Rectangle> enemyblock = new ArrayList<Rectangle>();
-    
+
     PrintWriter myOut;
 
     static {
@@ -71,32 +72,40 @@ public class GameMainController implements Initializable {
         SCENE = s;
         INSTANCE = fxmlLoader.getController();
     }
-    
+
     public GameMainController() {
-	
+
         ball = new Circle(5.0);
 
-	for (int i=0; i<20; i++){
-	    myblock.add(new Rectangle());
-	    enemyblock.add(new Rectangle());
-	}
-	
-	MesgRecvThread mrt = new MesgRecvThread(BlockBreak.getSocket(), BlockBreak.getUserName());
+        for (int i=0; i<20; i++){
+            myblock.add(new Rectangle());
+            enemyblock.add(new Rectangle());
+        }
+
+        try {
+            mainSocket = new Socket("localhost", 10027);
+        } catch (UnknownHostException e) {
+            System.err.println("Not found IPAddress of host." + e);
+        } catch (IOException e) {
+            System.err.println("The error occured." + e);
+        }
+
+        MesgRecvThread mrt = new MesgRecvThread(mainSocket , BlockBreak.getUserName());
         mrt.start();
 
     }
-    
+
     public class MesgRecvThread extends Thread {
-        
+
         Socket socket;
         String myName;
-        
+
         public MesgRecvThread(Socket s, String n) {
-	    
+
             socket = s;
             myName = n;
         }
-        
+
         @Override
         public void run() {
             try {
@@ -125,7 +134,7 @@ public class GameMainController implements Initializable {
 			    if((b<20&&id%2==0)||(b>=20&&id%2==1)){
 				if(b>=20){
 				    b-=20;
-		    
+
 				    if(id%2==1){
 					x = 300-x-50;
 					y = 600-y-20;
@@ -186,13 +195,13 @@ public class GameMainController implements Initializable {
 				myblock.get(b).setStroke(Color.BLACK);
 				myblock.get(b).setStrokeWidth(1);
 			    }
-			   			    
+
 			}else if(cmd.equals("BlockDelete")){
 			    int b = Integer.parseInt(inputTokens[1]);
 			    Thread thread = new BlockDeleteThread(b);
 			    thread.start();
 			}
-                          
+
 
 
                     }else{
@@ -210,12 +219,12 @@ public class GameMainController implements Initializable {
 
 	private int x;
 	private int y;
-	
+
 	BallMoveThread(int x, int y){
 	    this.x = x;
 	    this.y = y;
 	}
-	    
+
 	public void run() {
 	    if(id == 0){
 		ball.setCenterX(x);
@@ -255,8 +264,8 @@ public class GameMainController implements Initializable {
 	     }
 	}
     }
-    
-	
+
+
     /**
      * return instance(singleton)
      * @return INSTANCE
@@ -264,11 +273,11 @@ public class GameMainController implements Initializable {
     public static GameMainController getInstance() {
         return INSTANCE;
     }
-    
+
     public void show() {
         BlockBreak.getPresentStage().setScene(SCENE);
     }
-    
+
     @FXML
     private void handleKeyPressed(KeyEvent event) {
         System.out.println("keypressed");
@@ -276,7 +285,7 @@ public class GameMainController implements Initializable {
 	myOut.println(event.getCode());
 	myOut.flush();
     }
-    
+
     /**
      * Initializes the controller class.
      */
@@ -287,8 +296,8 @@ public class GameMainController implements Initializable {
 	root.getChildren().add(ball);
 	root.getChildren().addAll(myblock);
 	root.getChildren().addAll(enemyblock);
-    }    
-    
-    
-    
+    }
+
+
+
 }
