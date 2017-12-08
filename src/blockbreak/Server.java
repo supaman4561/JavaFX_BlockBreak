@@ -17,7 +17,7 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-
+import java.lang.Math;
 /*
  * Server Side
  */
@@ -76,15 +76,19 @@ class BallMoveThread extends Thread {
     private int ballX;
     private int ballY;
     private int radius = 5;
-    private int xVec = 5;
-    private int yVec = 5;
+    private int xVec = (int)(Math.random()*2 + 1);
+    private int yVec = (int)(Math.random()*2 + 1);
     private ArrayList<Block> blockArray;
 
     public BallMoveThread(int num,int x, int y, ArrayList<Block> blockArray) {
-	id = num;
-	ballX = x;
-	ballY = y;
-	this.blockArray = blockArray;
+    	id = num;
+    	ballX = x;
+    	ballY = y;
+        if(id%2 == 1){
+            xVec *= -1;
+            yVec *= -1;
+        }
+    	this.blockArray = blockArray;
     }
 
     @Override
@@ -305,9 +309,11 @@ public class Server {
 			            Thread.sleep(5000);
                     }catch(Exception e){}
 
-                    numBall = myBallMoveThread.size();
-                    myBallMoveThread.add(new BallMoveThread(numBall, 150, 300, blockArray));
-                    myBallMoveThread.get(numBall).start();
+                    //numBall = myBallMoveThread.size();
+                    for(int i=0; i<5; i++){
+                        myBallMoveThread.add(new BallMoveThread(i, 150+20*i, 300, blockArray));
+                        myBallMoveThread.get(i).start();
+                    }
                 }
             }
         } catch (Exception e) {

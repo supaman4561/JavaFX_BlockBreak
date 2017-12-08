@@ -49,7 +49,8 @@ public class GameMainController implements Initializable {
      */
     private static Socket mainSocket = null;
     int id;
-    Circle ball;
+    int ballMax = 10;
+    ArrayList<Circle> arrayBall = new ArrayList<Circle>();
     ArrayList<Rectangle> myblock = new ArrayList<Rectangle>();
     ArrayList<Rectangle> enemyblock = new ArrayList<Rectangle>();
 
@@ -75,7 +76,10 @@ public class GameMainController implements Initializable {
 
     public GameMainController() {
 
-        ball = new Circle(5.0);
+        for (int i=0; i<ballMax; i++){
+            arrayBall.add(new Circle(5.0));
+            arrayBall.get(i).visibleProperty().bind(new SimpleBooleanProperty(false));
+        }
 
         for (int i=0; i<20; i++){
             myblock.add(new Rectangle());
@@ -120,16 +124,24 @@ public class GameMainController implements Initializable {
                         // System.out.println(inputLine);
                         String[] inputTokens = inputLine.split(",");
                         String cmd = inputTokens[0];
-			if(cmd.equals("Hello")){
-			    id = Integer.parseInt(inputTokens[1]);
-			}else if(cmd.equals("Ball")){
-                            Thread thread = new BallMoveThread(Integer.parseInt(inputTokens[2]),
-							       Integer.parseInt(inputTokens[3]));
-			    thread.start();
+            			if(cmd.equals("Hello")){
+            			    id = Integer.parseInt(inputTokens[1]);
+            			}else if(cmd.equals("Ball")){
+                            int ballId = Integer.parseInt(inputTokens[1]);
+                            int ballX = Integer.parseInt(inputTokens[2]);
+                            int ballY = Integer.parseInt(inputTokens[3]);
+
+                            if((ballId - 1) < arrayBall.size()){
+                                arrayBall.get(ballId).visibleProperty().bind(new SimpleBooleanProperty(true));
+                            }
+
+                            Thread thread = new BallMoveThread(arrayBall.get(ballId), ballX, ballY);
+            			    thread.start();
+
                         }else if(cmd.equals("Blockset")){
-			    int x = Integer.parseInt(inputTokens[1]);
-			    int y = Integer.parseInt(inputTokens[2]);
-			    int b = Integer.parseInt(inputTokens[3]);
+            			    int x = Integer.parseInt(inputTokens[1]);
+            			    int y = Integer.parseInt(inputTokens[2]);
+            			    int b = Integer.parseInt(inputTokens[3]);
 
 			    if((b<20&&id%2==0)||(b>=20&&id%2==1)){
 				if(b>=20){
@@ -217,23 +229,25 @@ public class GameMainController implements Initializable {
 
     class BallMoveThread extends Thread{
 
-	private int x;
-	private int y;
+        private Circle target;
+        private int x;
+        private int y;
 
-	BallMoveThread(int x, int y){
-	    this.x = x;
-	    this.y = y;
-	}
+        BallMoveThread(Circle ball, int x, int y){
+            this.target = ball;
+            this.x = x;
+            this.y = y;
+        }
 
-	public void run() {
-	    if(id == 0){
-		ball.setCenterX(x);
-		ball.setCenterY(y);
-	    } else {
-		ball.setCenterX(root.getWidth() - x);
-		ball.setCenterY(root.getHeight() - y);
-	    }
-	}
+        public void run() {
+            if(id == 0){
+                target.setCenterX(x);
+                target.setCenterY(y);
+            } else {
+                target.setCenterX(root.getWidth() - x);
+                target.setCenterY(root.getHeight() - y);
+            }
+        }
     }
 
     class BlockDeleteThread extends Thread{
@@ -293,9 +307,9 @@ public class GameMainController implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         // TODO
         myName.setText(BlockBreak.getUserName());
-	root.getChildren().add(ball);
-	root.getChildren().addAll(myblock);
-	root.getChildren().addAll(enemyblock);
+        root.getChildren().addAll(arrayBall);
+    	root.getChildren().addAll(myblock);
+    	root.getChildren().addAll(enemyblock);
     }
 
 
