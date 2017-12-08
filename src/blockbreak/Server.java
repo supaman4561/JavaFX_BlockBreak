@@ -76,8 +76,8 @@ class BallMoveThread extends Thread {
     private int ballX;
     private int ballY;
     private int radius = 5;
-    private int xVec = 1;
-    private int yVec = 1;
+    private int xVec = 5;
+    private int yVec = 5;
     private ArrayList<Block> blockArray;
 
     public BallMoveThread(int num,int x, int y, ArrayList<Block> blockArray) {
@@ -93,7 +93,7 @@ class BallMoveThread extends Thread {
 	    move();
 	    String str = new String("Ball," + id + "," + ballX + "," + ballY + ",");
 	    Server.SendAll(str);
-	    watchCollision();
+	    blockCollision();
 	    try{
 		Thread.sleep(16);
 	    } catch (InterruptedException e) {
@@ -103,23 +103,19 @@ class BallMoveThread extends Thread {
     }
 
     private void move() {
-        if(ballX < 5){
-	    xVec = 2;
-	}else if(ballX > 295){
-	    xVec = -2;
-	}
+        if(ballX < 5 || ballX > 295){
+            xVec *= -1;
+        }
 
-	if(ballY < 5){
-	    yVec = 3;
-	}else if(ballY > 595){
-	    yVec = -3;
-	}
+        if(ballY < 5 || ballY > 595){
+            yVec *= -1;
+        }
 
-	ballX += xVec;
-	ballY += yVec;
+    	ballX += xVec;
+    	ballY += yVec;
     }
 
-    private void watchCollision(){
+    private void blockCollision(){
 
 	    Block target;
         boolean deathFlag;
@@ -310,7 +306,7 @@ public class Server {
                     }catch(Exception e){}
 
                     numBall = myBallMoveThread.size();
-                    myBallMoveThread.add(new BallMoveThread(numBall, 400, 400, blockArray));
+                    myBallMoveThread.add(new BallMoveThread(numBall, 150, 300, blockArray));
                     myBallMoveThread.get(numBall).start();
                 }
             }
