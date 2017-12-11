@@ -141,8 +141,13 @@ public void run() {
           myOut.println(SendMesg);
         }
         if (cmd.equals("Ball")) {
-          ball.setCenterX(Integer.parseInt(inputTokens[2]));
-          ball.setCenterY(Integer.parseInt(inputTokens[3]));
+          if(myNumber.equals("0")){
+            ball.setCenterX(Integer.parseInt(inputTokens[2]));
+            ball.setCenterY(Integer.parseInt(inputTokens[3]));
+          }else{
+            ball.setCenterX(300 - Integer.parseInt(inputTokens[2]));
+            ball.setCenterY(620 - Integer.parseInt(inputTokens[3]));
+          }
         }
         if (cmd.equals("EnemyPaddle")) {
           EnemyPaddle.setX(-1.0*Float.valueOf(inputTokens[2]));
