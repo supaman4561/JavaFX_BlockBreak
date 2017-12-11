@@ -92,11 +92,11 @@ public float MovePaddle(Rectangle Paddle, float mySpeed) {
   if (mySpeed == 0.0) mySpeed += 0.0;
   if (mySpeed < 0.0) {
     Paddle.setX(Math.max(Paddle.getX() + mySpeed, 150 * -1 + Paddle.getWidth() / 2));
-    mySpeed *= 0.96;
+    mySpeed *= 0.90;
   }
   if (mySpeed > 0.0) {
     Paddle.setX(Math.min(Paddle.getX() + mySpeed, 150 - Paddle.getWidth() / 2));
-    mySpeed *= 0.96;
+    mySpeed *= 0.90;
   }
   return mySpeed;
 }
@@ -121,13 +121,14 @@ public void run() {
     myOut = new PrintWriter(socket.getOutputStream(), true);
     myOut.println(myName);
     while (true) {
+
       String inputLine = br.readLine();
       if (inputLine != null) {
-        System.out.println("ReceiveMessage:" + inputLine);
+    //    System.out.println("ReceiveMessage:" + inputLine);
         String[] inputTokens = inputLine.split(",", -1);
         String cmd = inputTokens[0];
 
-        System.out.println("First word:" + cmd);
+    //    System.out.println("First word:" + cmd);
 
         if(cmd.equals("Hello")){
           myNumber = inputTokens[2];
@@ -181,8 +182,8 @@ public void show() {
 
 @FXML
 private void handleKeyPressed(KeyEvent event) {
-  System.out.println("keypressed");
-  System.out.println(event.getCode());
+//  System.out.println("keypressed");
+//  System.out.println(event.getCode());
   myOut.println(event.getCode());
   myOut.flush();
 }

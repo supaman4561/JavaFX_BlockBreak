@@ -30,7 +30,9 @@ private BufferedReader myIn;
 private PrintWriter myOut;
 private String myName;
 // private static double paddleX;
-private static int paddleX[] = new int[2];
+private static int paddleX[] = {120,120};
+
+
 
 public ClientProcThread(int n, Socket i, InputStreamReader isr,
                         BufferedReader in, PrintWriter out) {
@@ -55,8 +57,7 @@ public void run() {
     while (true) {
       String str = myIn.readLine();
       String[] input = str.split(",", -1);
-      System.out.println("Receive from client No." + number +
-                         "(" + myName + "), Messages: " + str);
+
       if (str != null) {
         if (input[0].equals("Paddle")) {
           if(input[1].equals("0")){
@@ -66,14 +67,13 @@ public void run() {
           }
           String enemy = new String("EnemyPaddle," + number + "," + input[2]);
           Server.SendAll(enemy,1 - number);
-      }else {
+        }else{
           Server.SendAll(str);
           keycode = str;
           String paddle = new String("Paddle," + keycode + "," + number);
           Server.SendAll(paddle,number);
         }
       }
-
       try {
         Thread.sleep(1);
       }
@@ -86,8 +86,9 @@ public void run() {
   }
 }
 static int[] getPaddleX(){
-    return paddleX;
-  }
+  return paddleX;
+}
+
 }
 
 
@@ -212,14 +213,12 @@ public static void SendAll(String str) {
   for (int i = 0; i < incoming.size(); i++) {
     out.get(i).println(str);
     out.get(i).flush();
-    System.out.println("Send messages to client No." + i);
   }
 }
 
 public static void SendAll(String str,int destNum){
   out.get(destNum).println(str);
   out.get(destNum).flush();
-  System.out.println("Send messages to client No." + destNum);
 }
 
 public static void main(String[] args) {
@@ -239,7 +238,7 @@ public static void main(String[] args) {
     while (true) {
       n = incoming.size();
       incoming.add(server.accept());
-      System.out.println("Accept client No." + n);
+
 
       isr.add(new InputStreamReader(incoming.get(n).getInputStream()));
       in.add(new BufferedReader(isr.get(n)));
