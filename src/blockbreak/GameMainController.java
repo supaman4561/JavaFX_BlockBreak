@@ -48,7 +48,7 @@ public class GameMainController implements Initializable {
      */
     private static Socket mainSocket = null;
     private int id;
-    private ArrayList<Circle> ball = new ArrayList<Circle>();
+    private ArrayList<Circle> arrayBall = new ArrayList<Circle>();
     private int ballMax = 1;
     private ArrayList<Rectangle> myblock = new ArrayList<Rectangle>();
     private ArrayList<Rectangle> enemyblock = new ArrayList<Rectangle>();
@@ -397,7 +397,7 @@ public class GameMainController implements Initializable {
         // TODO
         myName.setText(BlockBreak.getUserName());
 
-	root.getChildren().add(ball);
+	root.getChildren().addAll(arrayBall);
 	root.getChildren().addAll(myblock);
 	root.getChildren().addAll(enemyblock);
 	root.getChildren().add(EnemyPaddle);
