@@ -48,7 +48,8 @@ public class GameMainController implements Initializable {
      */
     private static Socket mainSocket = null;
     private int id;
-    private Circle ball;
+    private ArrayList<Circle> ball = new ArrayList<Circle>();
+    private int ballMax = 1;
     private ArrayList<Rectangle> myblock = new ArrayList<Rectangle>();
     private ArrayList<Rectangle> enemyblock = new ArrayList<Rectangle>();
     private Rectangle EnemyPaddle = new Rectangle(120,130,60,5);
@@ -87,7 +88,7 @@ public class GameMainController implements Initializable {
         }
 
         try {
-            mainSocket = new Socket("localhost", 10027);
+            mainSocket = new Socket("172.22.3.152", 10027);
         } catch (UnknownHostException e) {
             System.err.println("Not found IPAddress of host." + e);
         } catch (IOException e) {
@@ -151,7 +152,10 @@ public class GameMainController implements Initializable {
 			if(cmd.equals("Hello")){
 			    id = Integer.parseInt(inputTokens[1]);
 			}else if(cmd.equals("Ball")){
-                            Thread thread = new BallMoveThread(Integer.parseInt(inputTokens[2]),
+			    int ballId = Integer.parseInt(inputTokens[1]);
+			    
+                            Thread thread = new BallMoveThread(arrayBall.get(ballId),
+							       Integer.parseInt(inputTokens[2]),
 							       Integer.parseInt(inputTokens[3]));
 			    thread.start();
 			}else if(cmd.equals("Paddle")) {
