@@ -361,8 +361,6 @@ public class Server {
                 myClientProcThread.add(
 				       new ClientProcThread(n, incoming.get(n), isr.get(n), in.get(n), out.get(n)));
 
-		myClientProcThread.get(n).start(); // start thread
-
 		if(myClientProcThread.size() == 2){
 
 		    for(int i=0; i<2; i++){
@@ -373,6 +371,7 @@ public class Server {
 			Thread.sleep(5000);
                     }catch(Exception e){}
 
+		    myClientProcThread.get(n).start();
                     numBall = myBallMoveThread.size();
                     myBallMoveThread.add(new BallMoveThread(numBall, 150, 300, blockArray));
                     myBallMoveThread.get(numBall).start();
