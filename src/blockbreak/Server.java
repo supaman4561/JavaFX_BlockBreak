@@ -29,7 +29,6 @@ private InputStreamReader myIsr;
 private BufferedReader myIn;
 private PrintWriter myOut;
 private String myName;
-// private static double paddleX;
 private static int paddleX[] = {120,120};
 
 
@@ -61,24 +60,13 @@ public void run() {
       if (str != null) {
         if (input[0].equals("Paddle")) {
           if(input[1].equals("0")){
-            paddleX[0] = (int)Double.parseDouble(input[2]) + 120;
+            paddleX[0] = Integer.parseInt(input[2]) + 120;
           }else if(input[1].equals("1")){
-            paddleX[1] = -1 * (int)Double.parseDouble(input[2]) + 120;
+            paddleX[1] = -1 * Integer.parseInt(input[2]) + 120;
           }
           String enemy = new String("EnemyPaddle," + number + "," + input[2]);
           Server.SendAll(enemy,1 - number);
-        }else{
-          Server.SendAll(str);
-          keycode = str;
-          String paddle = new String("Paddle," + keycode + "," + number);
-          Server.SendAll(paddle,number);
         }
-      }
-      try {
-        Thread.sleep(1);
-      }
-      catch (InterruptedException e) {
-        e.printStackTrace();
       }
     }
   }
@@ -96,7 +84,6 @@ class BallMoveThread extends Thread {
 private int id;
 private int x;
 private int y;
-private int radius = 5;
 private int xVec = 1;
 private int yVec = 1;
 
@@ -110,60 +97,31 @@ private void BallCollision(){
   int paddleX[] = ClientProcThread.getPaddleX();
   final int upperPaddleY = 118;
   final int underPaddleY = 499;
-//  int ballOnPaddleX;
   int beforeX = x - xVec;
   int beforeY = y - yVec;
-  int beforeY2 = y + yVec;
 
-/*  if(this.y - radius - yVec <= underPaddleY && underPaddleY <= this.y + radius){
-    ballOnPaddleX = this.x + xVec * (underPaddleY - this.y) / yVec;
-    if(paddleX -10 <= ballOnPaddleX -5 && ballOnPaddleX <= paddleX + 65){
-      yVec *= -1;
-
-    }
-  }
-  if(this.y + radius + yVec <= upperPaddleY + 5 && upperPaddleY + 5 <= this.y + radius){
-    ballOnPaddleX = this.x + xVec * (this.y - upperPaddleY) / yVec;
-    if(paddleX -10 <= ballOnPaddleX -5 && ballOnPaddleX <= paddleX + 65){
-      yVec *= -1;
-
-    }
-  } */
-
-    if(beforeY <= underPaddleY && underPaddleY <= beforeY + radius){
-      if(paddleX[0]-10 <= beforeX && beforeX <= paddleX[0] + 75){
+  if(beforeY <= underPaddleY && underPaddleY <= y){
+      if(paddleX[0] <= beforeX && beforeX <= paddleX[0] + 60){
+        y = underPaddleY - yVec;
         yVec = -3;
-
       }
-    } else
-    if(underPaddleY <=  beforeY2 && beforeY2 - radius <= underPaddleY){
-      if(paddleX[0]-10 <= beforeX && beforeX <= paddleX[0] + 75){
+    } else if(beforeY >=  underPaddleY && y <= underPaddleY){
+      if(paddleX[0] <= beforeX && beforeX <= paddleX[0] + 60){
+        y = underPaddleY - yVec;
         yVec = 3;
 
       }
-    } else
-    if(upperPaddleY <=  beforeY && beforeY - radius <= upperPaddleY){
-      if(paddleX[1]-10 <= beforeX && beforeX <= paddleX[1] + 75){
+    } else if(beforeY >= upperPaddleY  && y <= upperPaddleY){
+      if(paddleX[1] <= beforeX && beforeX <= paddleX[1] + 60){
+        y = upperPaddleY - yVec;
         yVec = 3;
-
       }
-    } else
-    if(beforeY2 <= upperPaddleY && upperPaddleY <= beforeY2 + radius){
-      if(paddleX[1]-10 <= beforeX && beforeX <= paddleX[1] + 75){
+    } else if(beforeY <= upperPaddleY && upperPaddleY <= y){
+      if(paddleX[1] <= beforeX && beforeX <= paddleX[1] + 60){
+        y = upperPaddleY - yVec;
         yVec = -3;
-
       }
     }
-    /*
-    当たり判定のプログラム　パドルの座標は配列に代入してあるので、それを使う。
-    四つの場合に分けて書いた。すごく単純だし　たま〜に貫通する。
-
-
-
-
-    */
-
-
 }
 
 @Override

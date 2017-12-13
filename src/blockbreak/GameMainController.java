@@ -13,8 +13,10 @@ import javafx.scene.*;
 import javafx.scene.layout.*;
 import javafx.scene.shape.*;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.KeyCode;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
+
 
 /**
  * FXML Controller class
@@ -52,6 +54,7 @@ private static final Scene SCENE;
  */
 Circle ball;
 PrintWriter myOut;
+String myNumber;
 
 static {
   FXMLLoader fxmlLoader = new FXMLLoader(BlockBreak.class.getResource("GameMain.fxml"));
@@ -78,34 +81,18 @@ public GameMainController() {
   mrt.start();
 }
 
-public float MoveLeft(Rectangle Paddle, float mySpeed) {
-  mySpeed -= 1.42;
-  return mySpeed;
-}
-
-public float MoveRight(Rectangle Paddle, float mySpeed) {
-  mySpeed += 1.42;
-  return mySpeed;
-}
-
-public float MovePaddle(Rectangle Paddle, float mySpeed) {
-  if (mySpeed == 0.0) mySpeed += 0.0;
-  if (mySpeed < 0.0) {
-    Paddle.setX(Math.max(Paddle.getX() + mySpeed, 150 * -1 + Paddle.getWidth() / 2));
-    mySpeed *= 0.90;
-  }
-  if (mySpeed > 0.0) {
-    Paddle.setX(Math.min(Paddle.getX() + mySpeed, 150 - Paddle.getWidth() / 2));
-    mySpeed *= 0.90;
-  }
-  return mySpeed;
+public void MovePaddle(Rectangle MyPaddle,KeyCode key){
+  if(key == KeyCode.LEFT)  MyPaddle.setX(Math.max(MyPaddle.getX() - 20,150 * -1 + MyPaddle.getWidth() / 2));
+  if(key == KeyCode.RIGHT) MyPaddle.setX(Math.min(MyPaddle.getX() + 20,150 - MyPaddle.getWidth() / 2));
+  String SendMesg = new String("Paddle," + myNumber + "," + (int)MyPaddle.getX());
+  myOut.println(SendMesg);
 }
 
 public class MesgRecvThread extends Thread {
 Socket socket;
 String myName;
-String myNumber = "";
 float mySpeed = 0;
+
 
 public MesgRecvThread(Socket s, String n) {
   socket = s;
@@ -124,22 +111,12 @@ public void run() {
 
       String inputLine = br.readLine();
       if (inputLine != null) {
-    //    System.out.println("ReceiveMessage:" + inputLine);
         String[] inputTokens = inputLine.split(",", -1);
         String cmd = inputTokens[0];
-
-    //    System.out.println("First word:" + cmd);
 
         if(cmd.equals("Hello")){
           myNumber = inputTokens[2];
           System.out.println(myNumber);
-        }
-
-        if (cmd.equals("Paddle")) {
-          if (inputTokens[1].equals("LEFT")) mySpeed = MoveLeft(MyPaddle, mySpeed);
-          if (inputTokens[1].equals("RIGHT")) mySpeed =  MoveRight(MyPaddle, mySpeed);
-          String SendMesg = new String("Paddle," + myNumber + "," + MyPaddle.getX());
-          myOut.println(SendMesg);
         }
         if (cmd.equals("Ball")) {
           if(myNumber.equals("0")){
@@ -153,11 +130,9 @@ public void run() {
         if (cmd.equals("EnemyPaddle")) {
           EnemyPaddle.setX(-1.0*Float.valueOf(inputTokens[2]));
         }
-      }
-      else {
+      }else{
         break;
       }
-      mySpeed = MovePaddle(MyPaddle, mySpeed);
     }
     socket.close();
   }
@@ -182,10 +157,7 @@ public void show() {
 
 @FXML
 private void handleKeyPressed(KeyEvent event) {
-//  System.out.println("keypressed");
-//  System.out.println(event.getCode());
-  myOut.println(event.getCode());
-  myOut.flush();
+  MovePaddle(MyPaddle,event.getCode());
 }
 
 /**
