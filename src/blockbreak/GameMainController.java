@@ -53,6 +53,7 @@ public class GameMainController implements Initializable {
     private ArrayList<Rectangle> enemyblock = new ArrayList<Rectangle>();
     private Rectangle EnemyPaddle = new Rectangle(120,130,60,5);
     private Rectangle MyPaddle = new Rectangle(120,487,60,5);
+
     PrintWriter myOut;
 
     static {
@@ -75,7 +76,10 @@ public class GameMainController implements Initializable {
 
     public GameMainController() {
 
-        ball = new Circle(5.0);
+        for (int i=0; i<ballMax; i++){
+            arrayBall.add(new Circle(5.0));
+            arrayBall.get(i).visibleProperty().bind(new SimpleBooleanProperty(false));
+        }
 
         for (int i=0; i<20; i++){
             myblock.add(new Rectangle());
@@ -163,6 +167,7 @@ public class GameMainController implements Initializable {
 			    int x = Integer.parseInt(inputTokens[1]);
 			    int y = Integer.parseInt(inputTokens[2]);
 			    int b = Integer.parseInt(inputTokens[3]);
+
 
 			    if(b<20){
 				target = enemyblock.get(b);
@@ -309,23 +314,25 @@ public class GameMainController implements Initializable {
 
     class BallMoveThread extends Thread{
 
-	private int x;
-	private int y;
+        private Circle target;
+        private int x;
+        private int y;
 
-	BallMoveThread(int x, int y){
-	    this.x = x;
-	    this.y = y;
-	}
+        BallMoveThread(Circle ball, int x, int y){
+            this.target = ball;
+            this.x = x;
+            this.y = y;
+        }
 
-	public void run() {
-	    if(id == 0){
-		ball.setCenterX(x);
-		ball.setCenterY(y);
-	    } else {
-		ball.setCenterX(root.getWidth() - x);
-		ball.setCenterY(root.getHeight() - y);
-	    }
-	}
+        public void run() {
+            if(id == 0){
+                target.setCenterX(x);
+                target.setCenterY(y);
+            } else {
+                target.setCenterX(root.getWidth() - x);
+                target.setCenterY(root.getHeight() - y);
+            }
+        }
     }
 
     class BlockDeleteThread extends Thread{
@@ -385,11 +392,13 @@ public class GameMainController implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         // TODO
         myName.setText(BlockBreak.getUserName());
+
 	root.getChildren().add(ball);
 	root.getChildren().addAll(myblock);
 	root.getChildren().addAll(enemyblock);
 	root.getChildren().add(EnemyPaddle);
 	root.getChildren().add(MyPaddle);
+
     }
 
 
