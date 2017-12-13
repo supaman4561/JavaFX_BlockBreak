@@ -7,8 +7,7 @@ package blockbreak;
 
 import java.io.*;
 import java.net.*;
-import java.util.ResourceBundle;
-import java.util.ArrayList;
+import java.util.*;
 import javafx.fxml.*;
 import javafx.scene.*;
 import javafx.scene.layout.*;
@@ -48,11 +47,12 @@ public class GameMainController implements Initializable {
      * for sending to Server
      */
     private static Socket mainSocket = null;
-    int id;
-    Circle ball;
-    ArrayList<Rectangle> myblock = new ArrayList<Rectangle>();
-    ArrayList<Rectangle> enemyblock = new ArrayList<Rectangle>();
-
+    private int id;
+    private Circle ball;
+    private ArrayList<Rectangle> myblock = new ArrayList<Rectangle>();
+    private ArrayList<Rectangle> enemyblock = new ArrayList<Rectangle>();
+    private Rectangle EnemyPaddle = new Rectangle(120,130,60,5);
+    private Rectangle MyPaddle = new Rectangle(120,487,60,5);
     PrintWriter myOut;
 
     static {
@@ -95,10 +95,34 @@ public class GameMainController implements Initializable {
 
     }
 
+    public float MoveLeft(Rectangle Paddle, float mySpeed) {
+	mySpeed -= 1.42;
+	return mySpeed;
+    }
+
+    public float MoveRight(Rectangle Paddle, float mySpeed) {
+	mySpeed += 1.42;
+	return mySpeed;
+    }
+
+    public float MovePaddle(Rectangle Paddle, float mySpeed) {
+	if (mySpeed == 0.0) mySpeed += 0.0;
+	if (mySpeed < 0.0) {
+	    Paddle.setX(Math.max(Paddle.getX() + mySpeed, 150 * -1 + Paddle.getWidth() / 2));
+	    mySpeed *= 0.90;
+	}
+	if (mySpeed > 0.0) {
+	    Paddle.setX(Math.min(Paddle.getX() + mySpeed, 150 - Paddle.getWidth() / 2));
+	    mySpeed *= 0.90;
+	}
+	return mySpeed;
+    }
+    
     public class MesgRecvThread extends Thread {
 
         Socket socket;
         String myName;
+	float mySpeed = 0;
 
         public MesgRecvThread(Socket s, String n) {
 
@@ -117,7 +141,7 @@ public class GameMainController implements Initializable {
                     String inputLine = br.readLine();
                     if(inputLine != null) {
 			// for debug
-                        // System.out.println(inputLine);
+                        //System.out.println(inputLine);
                         String[] inputTokens = inputLine.split(",");
                         String cmd = inputTokens[0];
 			if(cmd.equals("Hello")){
@@ -126,20 +150,86 @@ public class GameMainController implements Initializable {
                             Thread thread = new BallMoveThread(Integer.parseInt(inputTokens[2]),
 							       Integer.parseInt(inputTokens[3]));
 			    thread.start();
+			}else if(cmd.equals("Paddle")) {
+			    if (inputTokens[1].equals("LEFT")) mySpeed = MoveLeft(MyPaddle, mySpeed);
+			    if (inputTokens[1].equals("RIGHT")) mySpeed =  MoveRight(MyPaddle, mySpeed);
+			    String SendMesg = new String("Paddle," + id + "," + MyPaddle.getX());
+			    myOut.println(SendMesg);
+
+			}else if (cmd.equals("EnemyPaddle")) {
+			    EnemyPaddle.setX(-1.0*Float.valueOf(inputTokens[2]));
                         }else if(cmd.equals("Blockset")){
+			    Rectangle target;
 			    int x = Integer.parseInt(inputTokens[1]);
 			    int y = Integer.parseInt(inputTokens[2]);
 			    int b = Integer.parseInt(inputTokens[3]);
 
-			    if((b<20&&id%2==0)||(b>=20&&id%2==1)){
+			    if(b<20){
+				target = enemyblock.get(b);
+				target.setX(x);
+				target.setY(y);
+				target.setWidth(50);
+				target.setHeight(20);
+				switch(b%5){
+				case 0:
+				    target.setFill(Color.RED);
+				    break;
+				case 1:
+				    target.setFill(Color.BLUE);
+				    break;
+				case 2:
+				    target.setFill(Color.YELLOW);
+				    break;
+				case 3:
+				    target.setFill(Color.GREEN);
+				    break;
+				case 4:
+				    target.setFill(Color.ORANGE);
+				    break;
+				}
+				target.setStroke(Color.BLACK);
+				target.setStrokeWidth(1);
+			    }else{
+				target = myblock.get(b-20);
+				target.setX(x);
+				target.setY(y);
+				target.setWidth(50);
+				target.setHeight(20);
+				switch(b%5){
+				case 0:
+				    target.setFill(Color.RED);
+				    break;
+				case 1:
+				    target.setFill(Color.BLUE);
+				    break;
+				case 2:
+				    target.setFill(Color.YELLOW);
+				    break;
+				case 3:
+				    target.setFill(Color.GREEN);
+				    break;
+				case 4:
+				    target.setFill(Color.ORANGE);
+				    break;
+				}
+				target.setStroke(Color.BLACK);
+				target.setStrokeWidth(1);
+			    }
+
+			    if(id%2 == 1){
+				Collections.reverse(myblock);
+				Collections.reverse(enemyblock);
+			    }
+			    
+			    /*if((b<20&&id%2==0)||(b>=20&&id%2==1)){
 				if(b>=20){
 				    b-=20;
-
-				    if(id%2==1){
-					x = 300-x-50;
-					y = 600-y-20;
-				    }
 				}
+				if(id%2==1){
+				    x = 300-x-50;
+				    y = 600-y-20;
+				}
+				
 				enemyblock.get(b).setX(x);
 				enemyblock.get(b).setY(y);
 				enemyblock.get(b).setWidth(50);
@@ -171,6 +261,7 @@ public class GameMainController implements Initializable {
 				    x = 300-x-50;
 				    y = 600-y-20;
 				}
+				
 				myblock.get(b).setX(x);
 				myblock.get(b).setY(y);
 				myblock.get(b).setWidth(50);
@@ -194,7 +285,7 @@ public class GameMainController implements Initializable {
 				}
 				myblock.get(b).setStroke(Color.BLACK);
 				myblock.get(b).setStrokeWidth(1);
-			    }
+				}*/
 
 			}else if(cmd.equals("BlockDelete")){
 			    int b = Integer.parseInt(inputTokens[1]);
@@ -207,6 +298,7 @@ public class GameMainController implements Initializable {
                     }else{
                         break;
                     }
+		    mySpeed = MovePaddle(MyPaddle, mySpeed);
                 }
 		socket.close();
             } catch (IOException e) {
@@ -277,15 +369,15 @@ public class GameMainController implements Initializable {
     public void show() {
         BlockBreak.getPresentStage().setScene(SCENE);
     }
-
+    
     @FXML
     private void handleKeyPressed(KeyEvent event) {
-        System.out.println("keypressed");
-        System.out.println(event.getCode());
+	//  System.out.println("keypressed");
+	//  System.out.println(event.getCode());
 	myOut.println(event.getCode());
 	myOut.flush();
     }
-
+  
     /**
      * Initializes the controller class.
      */
@@ -296,6 +388,8 @@ public class GameMainController implements Initializable {
 	root.getChildren().add(ball);
 	root.getChildren().addAll(myblock);
 	root.getChildren().addAll(enemyblock);
+	root.getChildren().add(EnemyPaddle);
+	root.getChildren().add(MyPaddle);
     }
 
 
