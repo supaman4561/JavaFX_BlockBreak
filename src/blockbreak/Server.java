@@ -37,30 +37,35 @@ class ClientProcThread extends Thread {
         myIsr = isr;
         myIn = in;
         myOut = out;
+        myOut.println("Hello," + number);
     }
 
-    
+
     static int[] getPaddleX(){
 	return paddleX;
     }
-    
+
     public void generateBlock(ArrayList<Block> blockArray){
     	Block target;
+        String message;
+
     	for(int id=0; id<blockArray.size(); id++){
     	    target = blockArray.get(id);
-    	    myOut.println("Blockset," + target.getX()
-    			  + "," + target.getY() + "," + id + "," + number);
+            message = new String("Blockset," + target.getX() + "," + target.getY());
+    	    myOut.println(message);
     	}
+
+        message = new String("Blockset,end");
+        myOut.println(message);
     }
 
     @Override
     public void run() {
         try {
-            myOut.println("Hello," + number);
 
             myName = myIn.readLine();
 
-	    String keycode = " ";         // クライアントに送信するキーのコード
+	    String keycode = " ";         // used at sending kecode to client
 
             // watching input to socket
             while(true) {
@@ -173,7 +178,7 @@ class BallMoveThread extends Thread {
 		  upperPaddleY <= beforeY2 + radius){
 	    if(paddleX[1]-10 <= beforeX && beforeX <= paddleX[1] + 75){
 		yVec = -3;
-		
+
 	    }
 	}
     }
@@ -363,6 +368,8 @@ public class Server {
 
 		if(myClientProcThread.size() == 2){
 
+            myClientProcThread.get(n).start();
+
 		    for(int i=0; i<2; i++){
 			myClientProcThread.get(i).generateBlock(blockArray);
 		    }
@@ -371,7 +378,6 @@ public class Server {
 			Thread.sleep(5000);
                     }catch(Exception e){}
 
-		    myClientProcThread.get(n).start();
                     numBall = myBallMoveThread.size();
                     myBallMoveThread.add(new BallMoveThread(numBall, 150, 300, blockArray));
                     myBallMoveThread.get(numBall).start();
