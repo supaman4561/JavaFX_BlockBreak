@@ -88,7 +88,7 @@ public class GameMainController implements Initializable {
         }
 
         try {
-            mainSocket = new Socket("172.22.3.152", 10027);
+            mainSocket = new Socket("localhost", 10027);
         } catch (UnknownHostException e) {
             System.err.println("Not found IPAddress of host." + e);
         } catch (IOException e) {
@@ -151,8 +151,11 @@ public class GameMainController implements Initializable {
                         String cmd = inputTokens[0];
 			if(cmd.equals("Hello")){
 			    id = Integer.parseInt(inputTokens[1]);
+			    System.out.println("id:" + id);
 			}else if(cmd.equals("Ball")){
 			    int ballId = Integer.parseInt(inputTokens[1]);
+
+			    arrayBall.get(ballId).visibleProperty().bind(new SimpleBooleanProperty(true));
 			    
                             Thread thread = new BallMoveThread(arrayBall.get(ballId),
 							       Integer.parseInt(inputTokens[2]),
@@ -172,62 +175,110 @@ public class GameMainController implements Initializable {
 			    int y = Integer.parseInt(inputTokens[2]);
 			    int b = Integer.parseInt(inputTokens[3]);
 
-
-			    if(b<20){
-				target = enemyblock.get(b);
-				target.setX(x);
-				target.setY(y);
-				target.setWidth(50);
-				target.setHeight(20);
-				switch(b%5){
-				case 0:
-				    target.setFill(Color.RED);
-				    break;
-				case 1:
-				    target.setFill(Color.BLUE);
-				    break;
-				case 2:
-				    target.setFill(Color.YELLOW);
-				    break;
-				case 3:
-				    target.setFill(Color.GREEN);
-				    break;
-				case 4:
-				    target.setFill(Color.ORANGE);
-				    break;
+			    if(id%2==0){
+				if(b<20){
+				    target = enemyblock.get(b);
+				    target.setX(x);
+				    target.setY(y);
+				    target.setWidth(50);
+				    target.setHeight(20);
+				    switch(b%5){
+				    case 0:
+					target.setFill(Color.RED);
+					break;
+				    case 1:
+					target.setFill(Color.BLUE);
+					break;
+				    case 2:
+					target.setFill(Color.YELLOW);
+					break;
+				    case 3:
+					target.setFill(Color.GREEN);
+					break;
+				    case 4:
+					target.setFill(Color.ORANGE);
+					break;
+				    }
+				    target.setStroke(Color.BLACK);
+				    target.setStrokeWidth(1);
+				}else{
+				    target = myblock.get(b-20);
+				    target.setX(x);
+				    target.setY(y);
+				    target.setWidth(50);
+				    target.setHeight(20);
+				    switch(b%5){
+				    case 0:
+					target.setFill(Color.RED);
+					break;
+				    case 1:
+					target.setFill(Color.BLUE);
+					break;
+				    case 2:
+					target.setFill(Color.YELLOW);
+					break;
+				    case 3:
+					target.setFill(Color.GREEN);
+					break;
+				    case 4:
+					target.setFill(Color.ORANGE);
+					break;
+				    }
+				    target.setStroke(Color.BLACK);
+				    target.setStrokeWidth(1);
 				}
-				target.setStroke(Color.BLACK);
-				target.setStrokeWidth(1);
-			    }else{
-				target = myblock.get(b-20);
-				target.setX(x);
-				target.setY(y);
-				target.setWidth(50);
-				target.setHeight(20);
-				switch(b%5){
-				case 0:
-				    target.setFill(Color.RED);
-				    break;
-				case 1:
-				    target.setFill(Color.BLUE);
-				    break;
-				case 2:
-				    target.setFill(Color.YELLOW);
-				    break;
-				case 3:
-				    target.setFill(Color.GREEN);
-				    break;
-				case 4:
-				    target.setFill(Color.ORANGE);
-				    break;
+			    }else if(id%2 == 1){
+			        if(b<20){
+				    target = myblock.get(19-b);
+				    target.setX(x);
+				    target.setY(y);
+				    target.setWidth(50);
+				    target.setHeight(20);
+				    switch(b%5){
+				    case 0:
+					target.setFill(Color.RED);
+					break;
+				    case 1:
+					target.setFill(Color.BLUE);
+					break;
+				    case 2:
+					target.setFill(Color.YELLOW);
+					break;
+				    case 3:
+					target.setFill(Color.GREEN);
+					break;
+				    case 4:
+					target.setFill(Color.ORANGE);
+					break;
+				    }
+				    target.setStroke(Color.BLACK);
+				    target.setStrokeWidth(1);
+				}else{
+				    target = enemyblock.get(39-b);
+				    target.setX(x);
+				    target.setY(y);
+				    target.setWidth(50);
+				    target.setHeight(20);
+				    switch(b%5){
+				    case 0:
+					target.setFill(Color.RED);
+					break;
+				    case 1:
+					target.setFill(Color.BLUE);
+					break;
+				    case 2:
+					target.setFill(Color.YELLOW);
+					break;
+				    case 3:
+					target.setFill(Color.GREEN);
+					break;
+				    case 4:
+					target.setFill(Color.ORANGE);
+					break;
+				    }
+				    target.setStroke(Color.BLACK);
+				    target.setStrokeWidth(1);
 				}
-				target.setStroke(Color.BLACK);
-				target.setStrokeWidth(1);
-			    }
-
-			    if(id%2 == 1){
-				Collections.reverse(myblock);
-				Collections.reverse(enemyblock);
 			    }
 			    
 			    /*if((b<20&&id%2==0)||(b>=20&&id%2==1)){
@@ -302,7 +353,7 @@ public class GameMainController implements Initializable {
 			    thread.start();
 			}
 
-
+			
 
                     }else{
                         break;
