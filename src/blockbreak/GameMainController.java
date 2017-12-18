@@ -221,11 +221,11 @@ public class GameMainController implements Initializable {
 
         public void run() {
             if(id == 0){
-                target.setCenterX(x);
-                target.setCenterY(y);
+                Platform.runLater(() -> target.setCenterX(x));
+                Platform.runLater(() -> target.setCenterY(y));
             } else {
-                target.setCenterX(root.getWidth() - x);
-                target.setCenterY(root.getHeight() - y);
+                Platform.runLater(() -> target.setCenterX(root.getWidth() - x));
+                Platform.runLater(() -> target.setCenterY(root.getHeight() - y));
             }
         }
     }

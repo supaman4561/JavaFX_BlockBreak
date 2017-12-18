@@ -2,7 +2,7 @@ package blockbreak;
 
 import javafx.scene.shape.Rectangle;
 import javafx.scene.paint.Color;
-    
+
 class ColoredRect extends Rectangle{
 
     public ColoredRect(int x, int y, int width, int height){
