@@ -16,6 +16,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
+import javafx.beans.property.*;
 
 
 /**
@@ -82,8 +83,10 @@ public GameMainController() {
 }
 
 public void MovePaddle(Rectangle MyPaddle,KeyCode key){
-  if(key == KeyCode.LEFT)  MyPaddle.setX(Math.max(MyPaddle.getX() - 20,150 * -1 + MyPaddle.getWidth() / 2));
-  if(key == KeyCode.RIGHT) MyPaddle.setX(Math.min(MyPaddle.getX() + 20,150 - MyPaddle.getWidth() / 2));
+  private Rectangle target = MyPaddle;
+
+  if(key == KeyCode.LEFT) Platform.runLater(() -> target.setX(Math.max(MyPaddle.getX() - 20,150 * -1 + MyPaddle.getWidth() / 2)));
+  if(key == KeyCode.RIGHT)Platform.runLater(() -> target.setX(Math.min(MyPaddle.getX() + 20,150 - MyPaddle.getWidth() / 2));
   String SendMesg = new String("Paddle," + myNumber + "," + (int)MyPaddle.getX());
   myOut.println(SendMesg);
 }
@@ -91,7 +94,7 @@ public void MovePaddle(Rectangle MyPaddle,KeyCode key){
 public class MesgRecvThread extends Thread {
 Socket socket;
 String myName;
-float mySpeed = 0;
+
 
 
 public MesgRecvThread(Socket s, String n) {
@@ -101,6 +104,7 @@ public MesgRecvThread(Socket s, String n) {
 
 @Override
 public void run() {
+  private Rectangle target = EnemyPaddle;
   try {
     InputStreamReader isr = new InputStreamReader(socket.getInputStream());
     BufferedReader br = new BufferedReader(isr);
@@ -128,7 +132,8 @@ public void run() {
           }
         }
         if (cmd.equals("EnemyPaddle")) {
-          EnemyPaddle.setX(-1.0*Float.valueOf(inputTokens[2]));
+          //EnemyPaddle.setX(-1.0*Float.valueOf(inputTokens[2]));
+          Platform.runLater(() -> target.setX(-1.0*Float.valueOf(inputTokens[2]));
         }
       }else{
         break;

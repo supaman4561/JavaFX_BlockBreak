@@ -50,7 +50,7 @@ public void run() {
 
     myName = myIn.readLine();
 
-    String keycode = " ";         // クライアントに送信するキーのコード
+    String keycode = "a";         // クライアントに送信するキーのコード
 
     // watching input to socket
     while (true) {
@@ -187,12 +187,13 @@ public static void main(String[] args) {
   myClientProcThread = new ArrayList <ClientProcThread>();
   myBallMoveThread = new ArrayList <BallMoveThread>();
 
-  int n;
+  int n = 0;
   int numBall = 0;
 
   try {
     System.out.println("The server has launched!");
     ServerSocket server = new ServerSocket(10027);
+    server.setSoTimeout(1000000000);
     while (true) {
       n = incoming.size();
       incoming.add(server.accept());
