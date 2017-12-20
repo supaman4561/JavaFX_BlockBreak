@@ -55,7 +55,7 @@ private static final Scene SCENE;
  */
 Circle ball;
 PrintWriter myOut;
-String myNumber;
+String myNumber; 
 
 static {
   FXMLLoader fxmlLoader = new FXMLLoader(BlockBreak.class.getResource("GameMain.fxml"));
