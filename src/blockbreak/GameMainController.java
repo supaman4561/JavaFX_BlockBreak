@@ -11,9 +11,9 @@ import java.util.*;
 import javafx.application.*;
 import javafx.fxml.*;
 import javafx.scene.*;
+import javafx.scene.input.*;
 import javafx.scene.layout.*;
 import javafx.scene.shape.*;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.beans.property.*;
@@ -34,6 +34,13 @@ public class GameMainController implements Initializable {
     @FXML
     private Pane root;
 
+    @FXML
+    private Rectangle MyPaddle;
+
+    @FXML
+    private Rectangle EnemyPaddle;
+
+
     /**
      * instanvce(singleton)
      */
@@ -52,8 +59,6 @@ public class GameMainController implements Initializable {
     private ArrayList<Circle> arrayBall = new ArrayList<Circle>();
     private int ballMax = 1;
     private ArrayList<ColoredRect> arrayBlock = new ArrayList<ColoredRect>();
-    private Rectangle EnemyPaddle = new Rectangle(120,130,60,5);
-    private Rectangle MyPaddle = new Rectangle(120,487,60,5);
 
     PrintWriter myOut;
 
@@ -95,27 +100,13 @@ public class GameMainController implements Initializable {
 
     }
 
-    public float MoveLeft(Rectangle Paddle, float mySpeed) {
-	mySpeed -= 1.42;
-	return mySpeed;
-    }
+    public void MovePaddle(Rectangle MyPaddle,KeyCode key){
+      Rectangle target = MyPaddle;
 
-    public float MoveRight(Rectangle Paddle, float mySpeed) {
-	mySpeed += 1.42;
-	return mySpeed;
-    }
-
-    public float MovePaddle(Rectangle Paddle, float mySpeed) {
-	if (mySpeed == 0.0) mySpeed += 0.0;
-	if (mySpeed < 0.0) {
-	    Paddle.setX(Math.max(Paddle.getX() + mySpeed, 150 * -1 + Paddle.getWidth() / 2));
-	    mySpeed *= 0.90;
-	}
-	if (mySpeed > 0.0) {
-	    Paddle.setX(Math.min(Paddle.getX() + mySpeed, 150 - Paddle.getWidth() / 2));
-	    mySpeed *= 0.90;
-	}
-	return mySpeed;
+      if(key == KeyCode.LEFT) Platform.runLater(() -> target.setX(Math.max(MyPaddle.getX() - 20,150 * -1 + MyPaddle.getWidth() / 2)));
+      if(key == KeyCode.RIGHT)Platform.runLater(() -> target.setX(Math.min(MyPaddle.getX() + 20,150 - MyPaddle.getWidth() / 2)));
+      String SendMesg = new String("Paddle," + id + "," + (int)MyPaddle.getX());
+      myOut.println(SendMesg);
     }
 
     public class MesgRecvThread extends Thread {
@@ -155,14 +146,9 @@ public class GameMainController implements Initializable {
                                                                Integer.parseInt(inputTokens[2]),
                                                                Integer.parseInt(inputTokens[3]));
                             thread.start();
-                        }else if(cmd.equals("Paddle")) {
-                            if (inputTokens[1].equals("LEFT")) mySpeed = MoveLeft(MyPaddle, mySpeed);
-                            if (inputTokens[1].equals("RIGHT")) mySpeed =  MoveRight(MyPaddle, mySpeed);
-                            String SendMesg = new String("Paddle," + id + "," + MyPaddle.getX());
-                            myOut.println(SendMesg);
-
                         }else if (cmd.equals("EnemyPaddle")) {
-                            EnemyPaddle.setX(-1.0*Float.valueOf(inputTokens[2]));
+                            System.out.println(inputLine);
+                            Platform.runLater(() -> EnemyPaddle.setX(-1.0*Float.valueOf(inputTokens[2])));
                         }else if(cmd.equals("Blockset")){
 
                             ColoredRect target;
@@ -198,7 +184,6 @@ public class GameMainController implements Initializable {
                         }
 
                     }
-		            mySpeed = MovePaddle(MyPaddle, mySpeed);
                 }
 		        socket.close();
             } catch (IOException e) {
@@ -247,8 +232,7 @@ public class GameMainController implements Initializable {
     private void handleKeyPressed(KeyEvent event) {
 	//  System.out.println("keypressed");
 	//  System.out.println(event.getCode());
-	myOut.println(event.getCode());
-	myOut.flush();
+    MovePaddle(MyPaddle,event.getCode());
     }
 
     /**
@@ -260,8 +244,6 @@ public class GameMainController implements Initializable {
         myName.setText(BlockBreak.getUserName());
 
 	root.getChildren().addAll(arrayBall);
-	root.getChildren().add(EnemyPaddle);
-	root.getChildren().add(MyPaddle);
 
     }
 

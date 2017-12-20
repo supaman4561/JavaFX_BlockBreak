@@ -74,22 +74,17 @@ class ClientProcThread extends Thread {
 		// for debug
 		// System.out.println("Receive from client No." + number +
                 //                    "(" + myName + "), Messages: " + str);
-		if (input[0].equals("Paddle")) {
-		    if(input[1].equals("0")){
-			paddleX[0] = (int)Double.parseDouble(input[2]) + 120;
-		    }else if(input[1].equals("1")){
-			paddleX[1] = -1 * (int)Double.parseDouble(input[2]) + 120;
-		    }
-		    String enemy = new String("EnemyPaddle," + number + "," + input[2]);
-		    Server.SendAll(enemy,1 - number);
-		}else{
-		    Server.SendAll(str);
-		    keycode = str;
-		    String paddle = new String("Paddle," + keycode + "," + number);
-		    Server.SendAll(paddle,number);
-		}
                 if(str != null) {
-                    Server.SendAll(str);
+                    if(input[0].equals("Paddle")){
+                        if(input[1].equals("0")){
+              			         paddleX[0] = Integer.parseInt(input[2]) + 120;
+              		      }else if(input[1].equals("1")){
+              			         paddleX[1] = -1 * Integer.parseInt(input[2]) + 120;
+              		      }
+                        String enemy = new String("EnemyPaddle," + number + "," + input[2]);
+                		    Server.SendAll(enemy,1 - number);
+                    }
+
                 }
 
             }
@@ -150,37 +145,34 @@ class BallMoveThread extends Thread {
     }
 
     private void paddleCollision(){
-	int paddleX[] = ClientProcThread.getPaddleX();
-	final int upperPaddleY = 130;
-	final int underPaddleY = 487;
-	int beforeX = ballX - xVec;
-	int beforeY = ballY - yVec;
-	int beforeY2 = ballY + yVec;
+      int paddleX[] = ClientProcThread.getPaddleX();
+      final int upperPaddleY = 118;
+      final int underPaddleY = 499;
+      int beforeX = ballX - xVec;
+      int beforeY = ballY - yVec;
 
-	if(beforeY <= underPaddleY && underPaddleY <= beforeY + radius){
-	    if(paddleX[0]-10 <= beforeX && beforeX <= paddleX[0] + 75){
-		yVec = -3;
+      if(beforeY <= underPaddleY && underPaddleY <= ballY){
+          if(paddleX[0] <= beforeX && beforeX <= paddleX[0] + 60){
+            ballY = underPaddleY - yVec;
+            yVec = -3;
+          }
+        } else if(beforeY >=  underPaddleY && ballY <= underPaddleY){
+          if(paddleX[0] <= beforeX && beforeX <= paddleX[0] + 60){
+            ballY = underPaddleY - yVec;
+            yVec = 3;
 
-	    }
-	} else if(underPaddleY <=  beforeY2 &&
-		  beforeY2 - radius <= underPaddleY){
-	    if(paddleX[0]-10 <= beforeX && beforeX <= paddleX[0] + 75){
-		yVec = 3;
-
-	    }
-	} else if(upperPaddleY <=  beforeY &&
-		  beforeY - radius <= upperPaddleY){
-	    if(paddleX[1]-10 <= beforeX && beforeX <= paddleX[1] + 75){
-		yVec = 3;
-
-	    }
-	} else if(beforeY2 <= upperPaddleY &&
-		  upperPaddleY <= beforeY2 + radius){
-	    if(paddleX[1]-10 <= beforeX && beforeX <= paddleX[1] + 75){
-		yVec = -3;
-
-	    }
-	}
+          }
+        } else if(beforeY >= upperPaddleY  && ballY <= upperPaddleY){
+          if(paddleX[1] <= beforeX && beforeX <= paddleX[1] + 60){
+            ballY = upperPaddleY - yVec;
+            yVec = 3;
+          }
+        } else if(beforeY <= upperPaddleY && upperPaddleY <= ballY){
+          if(paddleX[1] <= beforeX && beforeX <= paddleX[1] + 60){
+            ballY = upperPaddleY - yVec;
+            yVec = -3;
+          }
+        }
     }
 
     private void blockCollision(){
@@ -365,10 +357,11 @@ public class Server {
 
                 myClientProcThread.add(
 				       new ClientProcThread(n, incoming.get(n), isr.get(n), in.get(n), out.get(n)));
+               myClientProcThread.get(n).start();
 
 		if(myClientProcThread.size() == 2){
 
-            myClientProcThread.get(n).start();
+
 
 		    for(int i=0; i<2; i++){
 			myClientProcThread.get(i).generateBlock(blockArray);
