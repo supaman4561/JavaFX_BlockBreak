@@ -19,58 +19,47 @@ import javafx.stage.Stage;
  * @author Sudo
  */
 public class BlockBreak extends Application {
-    
+
     private static Stage presentStage;
     private static String userName;
-    private static Socket socket = null;
-    
+
     @Override
     public void start(Stage stage) throws Exception {
         presentStage = stage;
-        
+
         // Title
         stage.setTitle("BlockBreak");
-        
+
         // create scene
         Scene scene = new Scene(new Pane());
         stage.setScene(scene);
-        
+
         // first screan
         LoginController.getInstance().show();
-        
+
         // display
         stage.show();
-        
+
     }
-    
+
     public static void setUserName(String name) {
         userName = name;
-    } 
-    
+    }
+
     public static String getUserName() {
         return userName;
     }
-    
-    public static Socket getSocket() {
-        return socket;
-    }
-    
+
     public static Stage getPresentStage() {
         return presentStage;
     }
- 
+
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        try {
-            socket = new Socket("localhost", 10027);
-        } catch (UnknownHostException e) {
-            System.err.println("Not found IPAddress of host." + e);
-        } catch (IOException e) {
-            System.err.println("The error occured." + e);
-        }
+
         launch(args);
     }
-    
+
 }

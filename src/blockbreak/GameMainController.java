@@ -7,15 +7,16 @@ package blockbreak;
 
 import java.io.*;
 import java.net.*;
-import java.util.ResourceBundle;
-import java.util.ArrayList;
+import java.util.*;
+import javafx.application.*;
 import javafx.fxml.*;
 import javafx.scene.*;
+import javafx.scene.input.*;
 import javafx.scene.layout.*;
 import javafx.scene.shape.*;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
+import javafx.beans.property.*;
 
 /**
  * FXML Controller class
@@ -23,21 +24,28 @@ import javafx.scene.text.Text;
  * @author PCUser
  */
 public class GameMainController implements Initializable {
-    
+
     @FXML
     private Text myName;
-    
+
     @FXML
     private Text opponentName;
 
     @FXML
     private Pane root;
-    
+
+    @FXML
+    private Rectangle MyPaddle;
+
+    @FXML
+    private Rectangle EnemyPaddle;
+
+
     /**
      * instanvce(singleton)
      */
     private static final GameMainController INSTANCE;
-    
+
     /**
      * Scene(singleton)
      */
@@ -46,11 +54,12 @@ public class GameMainController implements Initializable {
     /**
      * for sending to Server
      */
-    int id;
-    Circle ball;
-    ArrayList<Rectangle> myblock = new ArrayList<Rectangle>();
-    ArrayList<Rectangle> enemyblock = new ArrayList<Rectangle>();
-    
+    private static Socket mainSocket = null;
+    private static int id;
+    private ArrayList<Circle> arrayBall = new ArrayList<Circle>();
+    private int ballMax = 1;
+    private ArrayList<ColoredRect> arrayBlock = new ArrayList<ColoredRect>();
+
     PrintWriter myOut;
 
     static {
@@ -70,32 +79,48 @@ public class GameMainController implements Initializable {
         SCENE = s;
         INSTANCE = fxmlLoader.getController();
     }
-    
-    public GameMainController() {
-	
-        ball = new Circle(5.0);
 
-	for (int i=0; i<20; i++){
-	    myblock.add(new Rectangle());
-	    enemyblock.add(new Rectangle());
-	}
-	
-	MesgRecvThread mrt = new MesgRecvThread(BlockBreak.getSocket(), BlockBreak.getUserName());
+    public GameMainController() {
+
+        for (int i=0; i<ballMax; i++){
+            arrayBall.add(new Circle(5.0));
+            arrayBall.get(i).visibleProperty().bind(new SimpleBooleanProperty(true));
+        }
+
+        try {
+            mainSocket = new Socket("localhost", 10027);
+        } catch (UnknownHostException e) {
+            System.err.println("Not found IPAddress of host." + e);
+        } catch (IOException e) {
+            System.err.println("The error occured." + e);
+        }
+
+        MesgRecvThread mrt = new MesgRecvThread(mainSocket , BlockBreak.getUserName());
         mrt.start();
 
     }
-    
+
+    public void MovePaddle(Rectangle MyPaddle,KeyCode key){
+      Rectangle target = MyPaddle;
+
+      if(key == KeyCode.LEFT) Platform.runLater(() -> target.setX(Math.max(MyPaddle.getX() - 20,150 * -1 + MyPaddle.getWidth() / 2)));
+      if(key == KeyCode.RIGHT)Platform.runLater(() -> target.setX(Math.min(MyPaddle.getX() + 20,150 - MyPaddle.getWidth() / 2)));
+      String SendMesg = new String("Paddle," + id + "," + (int)MyPaddle.getX());
+      myOut.println(SendMesg);
+    }
+
     public class MesgRecvThread extends Thread {
-        
+
         Socket socket;
         String myName;
-        
+	float mySpeed = 0;
+
         public MesgRecvThread(Socket s, String n) {
-	    
+
             socket = s;
             myName = n;
         }
-        
+
         @Override
         public void run() {
             try {
@@ -106,126 +131,91 @@ public class GameMainController implements Initializable {
                 while(true) {
                     String inputLine = br.readLine();
                     if(inputLine != null) {
-			// for debug
+			             // for debug
                         // System.out.println(inputLine);
                         String[] inputTokens = inputLine.split(",");
                         String cmd = inputTokens[0];
-			if(cmd.equals("Hello")){
-			    id = Integer.parseInt(inputTokens[1]);
-			}else if(cmd.equals("Ball")){
-                            if(id == 0){
-				ball.setCenterX(Integer.parseInt(inputTokens[2]));
-				ball.setCenterY(Integer.parseInt(inputTokens[3]));
-			    } else {
-				ball.setCenterX(root.getWidth() - Integer.parseInt(inputTokens[2]));
-				ball.setCenterY(root.getHeight() - Integer.parseInt(inputTokens[3]));
-			    }
+
+                        if(cmd.equals("Hello")){
+                            System.out.println(inputLine);
+                            id = Integer.parseInt(inputTokens[1]);
+                        }else if(cmd.equals("Ball")){
+                            int ballId = Integer.parseInt(inputTokens[1]);
+
+                            Thread thread = new BallMoveThread(arrayBall.get(ballId),
+                                                               Integer.parseInt(inputTokens[2]),
+                                                               Integer.parseInt(inputTokens[3]));
+                            thread.start();
+                        }else if (cmd.equals("EnemyPaddle")) {
+                            System.out.println(inputLine);
+                            Platform.runLater(() -> EnemyPaddle.setX(-1.0*Float.valueOf(inputTokens[2])));
                         }else if(cmd.equals("Blockset")){
-			    int x = Integer.parseInt(inputTokens[1]);
-			    int y = Integer.parseInt(inputTokens[2]);
-			    int b = Integer.parseInt(inputTokens[3]);
-			    int num = Integer.parseInt(inputTokens[4]);
 
-			    num %= 2;
-			    if((b<20&&num==0)||(b>=20&&num==1)){
-				if(b>=20){
-				    b-=20;
+                            ColoredRect target;
+                            int x;
+                            int y;
 
-				    if(num==1){
-					x = 300-x-50;
-					y = 600-y-20;
-				    }
-				}
-				enemyblock.get(b).setX(x);
-				enemyblock.get(b).setY(y);
-				enemyblock.get(b).setWidth(50);
-				enemyblock.get(b).setHeight(20);
-				switch(b%5){
-				case 0:
-				    enemyblock.get(b).setFill(Color.RED);
-				    break;
-				case 1:
-				    enemyblock.get(b).setFill(Color.BLUE);
-				    break;
-				case 2:
-				    enemyblock.get(b).setFill(Color.YELLOW);
-				    break;
-				case 3:
-				    enemyblock.get(b).setFill(Color.GREEN);
-				    break;
-				case 4:
-				    enemyblock.get(b).setFill(Color.ORANGE);
-				    break;
-				}
-				enemyblock.get(b).setStroke(Color.BLACK);
-				enemyblock.get(b).setStrokeWidth(1);
-			    }else{
-				if(b>=20){
-				    b-=20;
-				}
-				if(num==1){
-				    x = 300-x-50;
-				    y = 600-y-20;
-				}
-				myblock.get(b).setX(x);
-				myblock.get(b).setY(y);
-				myblock.get(b).setWidth(50);
-				myblock.get(b).setHeight(20);
-				switch(b%5){
-				case 0:
-				    myblock.get(b).setFill(Color.RED);
-				    break;
-				case 1:
-				    myblock.get(b).setFill(Color.BLUE);
-				    break;
-				case 2:
-				    myblock.get(b).setFill(Color.YELLOW);
-				    break;
-				case 3:
-				    myblock.get(b).setFill(Color.GREEN);
-				    break;
-				case 4:
-				    myblock.get(b).setFill(Color.ORANGE);
-				    break;
-				}
-				myblock.get(b).setStroke(Color.BLACK);
-				myblock.get(b).setStrokeWidth(1);
-                            }
-			}else if(cmd.equals("Blockdelete")){
-                            int num = Integer.parseInt(inputTokens[1]);
-                            int b = Integer.parseInt(inputTokens[2]);
-                            num %= 2;
-                            if((b<20&&num==0)||(b>=20&&num==1)){
-				if(b>=20){
-				    b-=20;
-				}
-				root.getChildren().remove(enemyblock.get(b));
-                                //enemyblock.get(b).setFill(Color.WHITE);
-                                //enemyblock.get(b).setStroke(Color.WHITE);
-			    }else{
-                                if(b>=20){
-				    b-=20;
+                            if(inputTokens[1].equals("end")){
+                                if(id % 2 == 1){
+                                     Collections.reverse(arrayBlock);
                                 }
-				root.getChildren().remove(myblock.get(b));
-				//myblock.get(b).setFill(Color.WHITE);
-				//myblock.get(b).setStroke(Color.WHITE);
 
-			    }
-			}
-                          
+                                System.out.println(id);
+                                for(int i=0; i < arrayBlock.size() ; i++){
+                                    System.out.println(arrayBlock.get(i).getY());
+                                }
+                                Platform.runLater(() -> root.getChildren().addAll(arrayBlock));
+                            }else{
+                                x = Integer.parseInt(inputTokens[1]);
+                                y = Integer.parseInt(inputTokens[2]);
 
+                                // width : 50 , height : 20
+                                target = new ColoredRect(x, y, 50, 20);
+                                target.setColor(arrayBlock.size());
+                                arrayBlock.add(target);
 
-                    }else{
-                        break;
+                            }
+
+                        }else if(cmd.equals("BlockDelete")){
+                            int blockId = Integer.parseInt(inputTokens[1]);
+                            arrayBlock.get(blockId).visibleProperty().bind(new SimpleBooleanProperty(false));
+                        }else{
+                            break;
+                        }
+
                     }
                 }
-		socket.close();
+		        socket.close();
             } catch (IOException e) {
                 System.err.println("error occured: " + e);
             }
         }
     }
-    
+
+    class BallMoveThread extends Thread{
+
+        private Circle target;
+        private int x;
+        private int y;
+
+        BallMoveThread(Circle ball, int x, int y){
+            this.target = ball;
+            this.x = x;
+            this.y = y;
+        }
+
+        public void run() {
+            if(id == 0){
+                Platform.runLater(() -> target.setCenterX(x));
+                Platform.runLater(() -> target.setCenterY(y));
+            } else {
+                Platform.runLater(() -> target.setCenterX(root.getWidth() - x));
+                Platform.runLater(() -> target.setCenterY(root.getHeight() - y));
+            }
+        }
+    }
+
+
     /**
      * return instance(singleton)
      * @return INSTANCE
@@ -233,19 +223,18 @@ public class GameMainController implements Initializable {
     public static GameMainController getInstance() {
         return INSTANCE;
     }
-    
+
     public void show() {
         BlockBreak.getPresentStage().setScene(SCENE);
     }
-    
+
     @FXML
     private void handleKeyPressed(KeyEvent event) {
-        System.out.println("keypressed");
-        System.out.println(event.getCode());
-	myOut.println(event.getCode());
-	myOut.flush();
+	//  System.out.println("keypressed");
+	//  System.out.println(event.getCode());
+    MovePaddle(MyPaddle,event.getCode());
     }
-    
+
     /**
      * Initializes the controller class.
      */
@@ -253,11 +242,11 @@ public class GameMainController implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         // TODO
         myName.setText(BlockBreak.getUserName());
-	root.getChildren().add(ball);
-	root.getChildren().addAll(myblock);
-	root.getChildren().addAll(enemyblock);
-    }    
-    
-    
-    
+
+	root.getChildren().addAll(arrayBall);
+
+    }
+
+
+
 }
