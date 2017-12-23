@@ -42,7 +42,7 @@ class ClientProcThread extends Thread {
 
 
     static int[] getPaddleX(){
-	return paddleX;
+	     return paddleX;
     }
 
     public void generateBlock(ArrayList<Block> blockArray){
@@ -54,7 +54,6 @@ class ClientProcThread extends Thread {
             message = new String("Blockset," + target.getX() + "," + target.getY());
     	    myOut.println(message);
     	}
-
         message = new String("Blockset,end");
         myOut.println(message);
     }
@@ -84,10 +83,8 @@ class ClientProcThread extends Thread {
                         String enemy = new String("EnemyPaddle," + number + "," + input[2]);
                 		    Server.SendAll(enemy,1 - number);
                     }
-
+                  }
                 }
-
-            }
         } catch (IOException e) {
 
         }
@@ -120,8 +117,8 @@ class BallMoveThread extends Thread {
 	    move();
 	    String str = new String("Ball," + id + "," + ballX + "," + ballY + ",");
 	    Server.SendAll(str);
-	    blockCollision();
-	    paddleCollision();
+      blockCollision();
+      paddleCollision();
 	    try{
 		Thread.sleep(16);
 	    } catch (InterruptedException e) {
@@ -146,31 +143,32 @@ class BallMoveThread extends Thread {
 
     private void paddleCollision(){
       int paddleX[] = ClientProcThread.getPaddleX();
-      final int upperPaddleY = 118;
-      final int underPaddleY = 499;
+      final int upperPaddleY = 120;
+      final int underPaddleY = 460;
       int beforeX = ballX - xVec;
       int beforeY = ballY - yVec;
+
 
       if(beforeY <= underPaddleY && underPaddleY <= ballY){
           if(paddleX[0] <= beforeX && beforeX <= paddleX[0] + 60){
             ballY = underPaddleY - yVec;
-            yVec = -3;
+            yVec = -2;
           }
-        } else if(beforeY >=  underPaddleY && ballY <= underPaddleY){
+        } else if(beforeY >=  underPaddleY +5 && ballY <= underPaddleY +5){
           if(paddleX[0] <= beforeX && beforeX <= paddleX[0] + 60){
             ballY = underPaddleY - yVec;
-            yVec = 3;
+            yVec = 2;
 
           }
-        } else if(beforeY >= upperPaddleY  && ballY <= upperPaddleY){
+        } else if(beforeY >= upperPaddleY +5  && ballY <= upperPaddleY +5){
           if(paddleX[1] <= beforeX && beforeX <= paddleX[1] + 60){
             ballY = upperPaddleY - yVec;
-            yVec = 3;
+            yVec = 2;
           }
         } else if(beforeY <= upperPaddleY && upperPaddleY <= ballY){
           if(paddleX[1] <= beforeX && beforeX <= paddleX[1] + 60){
             ballY = upperPaddleY - yVec;
-            yVec = -3;
+            yVec = -2;
           }
         }
     }
