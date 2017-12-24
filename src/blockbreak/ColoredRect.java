@@ -21,7 +21,7 @@ class ColoredRect extends Rectangle{
 	}
 
 	this.setFill(color);
-	this.setStroke(color);
+	this.setStroke(Color.BLACK);
 	this.setStrokeWidth(1);
     }
 }
