@@ -1,8 +1,8 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+* To change this license header, choose License Headers in Project Properties.
+* To change this template file, choose Tools | Templates
+* and open the template in the editor.
+*/
 package blockbreak;
 
 import java.io.*;
@@ -20,10 +20,10 @@ import javafx.beans.property.*;
 import java.util.concurrent.*;
 
 /**
- * FXML Controller class
- *
- * @author PCUser
- */
+* FXML Controller class
+*
+* @author PCUser
+*/
 public class GameMainController implements Initializable {
 
     @FXML
@@ -43,18 +43,18 @@ public class GameMainController implements Initializable {
 
 
     /**
-     * instanvce(singleton)
-     */
+    * instanvce(singleton)
+    */
     private static final GameMainController INSTANCE;
 
     /**
-     * Scene(singleton)
-     */
+    * Scene(singleton)
+    */
     private static final Scene SCENE;
 
     /**
-     * for sending to Server
-     */
+    * for sending to Server
+    */
     private static Socket mainSocket = null;
     private static int id;
     private ArrayList<Circle> arrayBall = new ArrayList<Circle>();
@@ -73,7 +73,7 @@ public class GameMainController implements Initializable {
         Parent parent = fxmlLoader.getRoot();
         parent.requestFocus();
 
-	Scene s = new Scene(parent);
+        Scene s = new Scene(parent);
         s.getRoot().requestFocus();
 
         s.setFill(Color.TRANSPARENT);
@@ -103,28 +103,28 @@ public class GameMainController implements Initializable {
 
     public void MovePaddle(Rectangle MyPaddle,KeyCode key){
 
-      int pX = 0;
+        int pX = 0;
 
-      if(key == KeyCode.LEFT){
-        pX = (int)Math.max(MyPaddle.getX() - 20,150 * -1 + MyPaddle.getWidth() / 2);
-        String SendMesg = new String("Paddle," + id + "," + pX);
-        myOut.println(SendMesg);
-        Platform.runLater(() -> MyPaddle.setX(Math.max(MyPaddle.getX() - 20,150 * -1 + MyPaddle.getWidth() / 2)));
-      }else if(key == KeyCode.RIGHT){
-        pX = (int)Math.min(MyPaddle.getX() + 20,150 - MyPaddle.getWidth() / 2);
-        String SendMesg = new String("Paddle," + id + "," + pX);
-        myOut.println(SendMesg);
-        Platform.runLater(() -> MyPaddle.setX(Math.min(MyPaddle.getX() + 20,150 - MyPaddle.getWidth() / 2)));
-      }
+        if(key == KeyCode.LEFT){
+            pX = (int)Math.max(MyPaddle.getX() - 20,150 * -1 + MyPaddle.getWidth() / 2);
+            String SendMesg = new String("Paddle," + id + "," + pX);
+            myOut.println(SendMesg);
+            Platform.runLater(() -> MyPaddle.setX(Math.max(MyPaddle.getX() - 20,150 * -1 + MyPaddle.getWidth() / 2)));
+        }else if(key == KeyCode.RIGHT){
+            pX = (int)Math.min(MyPaddle.getX() + 20,150 - MyPaddle.getWidth() / 2);
+            String SendMesg = new String("Paddle," + id + "," + pX);
+            myOut.println(SendMesg);
+            Platform.runLater(() -> MyPaddle.setX(Math.min(MyPaddle.getX() + 20,150 - MyPaddle.getWidth() / 2)));
+        }
 
-}
+    }
 
 
     public class MesgRecvThread extends Thread {
 
         Socket socket;
         String myName;
-	float mySpeed = 0;
+        float mySpeed = 0;
 
         public MesgRecvThread(Socket s, String n) {
 
@@ -142,7 +142,7 @@ public class GameMainController implements Initializable {
                 while(true) {
                     String inputLine = br.readLine();
                     if(inputLine != null) {
-			             // for debug
+                        // for debug
                         // System.out.println(inputLine);
                         String[] inputTokens = inputLine.split(",");
                         String cmd = inputTokens[0];
@@ -154,8 +154,8 @@ public class GameMainController implements Initializable {
                             int ballId = Integer.parseInt(inputTokens[1]);
 
                             Thread thread = new BallMoveThread(arrayBall.get(ballId),
-                                                               Integer.parseInt(inputTokens[2]),
-                                                               Integer.parseInt(inputTokens[3]));
+                            Integer.parseInt(inputTokens[2]),
+                            Integer.parseInt(inputTokens[3]));
                             thread.start();
                         }else if (cmd.equals("EnemyPaddle")) {
                             System.out.println(inputLine);
@@ -168,7 +168,7 @@ public class GameMainController implements Initializable {
 
                             if(inputTokens[1].equals("end")){
                                 if(id % 2 == 1){
-                                     Collections.reverse(arrayBlock);
+                                    Collections.reverse(arrayBlock);
                                 }
 
                                 System.out.println(id);
@@ -190,13 +190,19 @@ public class GameMainController implements Initializable {
                         }else if(cmd.equals("BlockDelete")){
                             int blockId = Integer.parseInt(inputTokens[1]);
                             arrayBlock.get(blockId).visibleProperty().bind(new SimpleBooleanProperty(false));
+                        }else if(cmd.equals("Win")){
+                            // Animation
+                            System.out.println("win");
+                        }else if(cmd.equals("Lose")){
+                            // Animation
+                            System.out.println("lose");
                         }else{
                             break;
                         }
 
                     }
                 }
-		        socket.close();
+                socket.close();
             } catch (IOException e) {
                 System.err.println("error occured: " + e);
             }
@@ -228,9 +234,9 @@ public class GameMainController implements Initializable {
 
 
     /**
-     * return instance(singleton)
-     * @return INSTANCE
-     */
+    * return instance(singleton)
+    * @return INSTANCE
+    */
     public static GameMainController getInstance() {
         return INSTANCE;
     }
@@ -241,21 +247,21 @@ public class GameMainController implements Initializable {
 
     @FXML
     private void handleKeyPressed(KeyEvent event) {
-	//  System.out.println("keypressed");
-	//  System.out.println(event.getCode());
-    MovePaddle(MyPaddle,event.getCode());
+        //  System.out.println("keypressed");
+        //  System.out.println(event.getCode());
+        MovePaddle(MyPaddle,event.getCode());
 
     }
 
     /**
-     * Initializes the controller class.
-     */
+    * Initializes the controller class.
+    */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         // TODO
         myName.setText(BlockBreak.getUserName());
 
-	root.getChildren().addAll(arrayBall);
+        root.getChildren().addAll(arrayBall);
 
     }
 
