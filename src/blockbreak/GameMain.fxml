@@ -17,6 +17,7 @@
          <children>
             <Rectangle fx:id="EnemyPaddle" arcHeight="5.0" arcWidth="5.0" fill="DODGERBLUE" height="5.0" layoutX="120.0" layoutY="120.0" stroke="BLACK" strokeType="INSIDE" width="60.0" />
             <Rectangle fx:id="MyPaddle" arcHeight="5.0" arcWidth="5.0" fill="DODGERBLUE" height="5.0" layoutX="120.0" layoutY="460.0" stroke="BLACK" strokeType="INSIDE" width="60.0" />
+            <Text fx:id = "AnimationText" layoutX = "150.0" layoutY = "310.0" strokeType="OUTSIDE" strokeWidth = "0.0" text = ""  />
          </children></Pane>
   </children>
 </AnchorPane>
