@@ -1,8 +1,8 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+* To change this license header, choose License Headers in Project Properties.
+* To change this template file, choose Tools | Templates
+* and open the template in the editor.
+*/
 package blockbreak;
 
 import java.io.*;
@@ -18,12 +18,14 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.beans.property.*;
 import java.util.concurrent.*;
+import javafx.scene.text.Font;
+import javafx.scene.text.TextAlignment;
 
 /**
- * FXML Controller class
- *
- * @author PCUser
- */
+* FXML Controller class
+*
+* @author PCUser
+*/
 public class GameMainController implements Initializable {
 
     @FXML
@@ -41,20 +43,22 @@ public class GameMainController implements Initializable {
     @FXML
     private Rectangle EnemyPaddle;
 
+    @FXML
+    private Text AnimationText;
 
     /**
-     * instanvce(singleton)
-     */
+    * instanvce(singleton)
+    */
     private static final GameMainController INSTANCE;
 
     /**
-     * Scene(singleton)
-     */
+    * Scene(singleton)
+    */
     private static final Scene SCENE;
 
     /**
-     * for sending to Server
-     */
+    * for sending to Server
+    */
     private static Socket mainSocket = null;
     private static int id;
     private ArrayList<Circle> arrayBall = new ArrayList<Circle>();
@@ -72,7 +76,7 @@ public class GameMainController implements Initializable {
         Parent parent = fxmlLoader.getRoot();
         parent.requestFocus();
 
-	Scene s = new Scene(parent);
+        Scene s = new Scene(parent);
         s.getRoot().requestFocus();
 
         s.setFill(Color.TRANSPARENT);
@@ -97,21 +101,21 @@ public class GameMainController implements Initializable {
 
     public void MovePaddle(Rectangle MyPaddle,KeyCode key){
 
-      int pX = 0;
+        int pX = 0;
 
-      if(key == KeyCode.LEFT){
-        pX = (int)Math.max(MyPaddle.getX() - 20,150 * -1 + MyPaddle.getWidth() / 2);
-        String SendMesg = new String("Paddle," + id + "," + pX);
-        myOut.println(SendMesg);
-        Platform.runLater(() -> MyPaddle.setX(Math.max(MyPaddle.getX() - 20,150 * -1 + MyPaddle.getWidth() / 2)));
-      }else if(key == KeyCode.RIGHT){
-        pX = (int)Math.min(MyPaddle.getX() + 20,150 - MyPaddle.getWidth() / 2);
-        String SendMesg = new String("Paddle," + id + "," + pX);
-        myOut.println(SendMesg);
-        Platform.runLater(() -> MyPaddle.setX(Math.min(MyPaddle.getX() + 20,150 - MyPaddle.getWidth() / 2)));
-      }
+        if(key == KeyCode.LEFT){
+            pX = (int)Math.max(MyPaddle.getX() - 20,150 * -1 + MyPaddle.getWidth() / 2);
+            String SendMesg = new String("Paddle," + id + "," + pX);
+            myOut.println(SendMesg);
+            Platform.runLater(() -> MyPaddle.setX(Math.max(MyPaddle.getX() - 20,150 * -1 + MyPaddle.getWidth() / 2)));
+        }else if(key == KeyCode.RIGHT){
+            pX = (int)Math.min(MyPaddle.getX() + 20,150 - MyPaddle.getWidth() / 2);
+            String SendMesg = new String("Paddle," + id + "," + pX);
+            myOut.println(SendMesg);
+            Platform.runLater(() -> MyPaddle.setX(Math.min(MyPaddle.getX() + 20,150 - MyPaddle.getWidth() / 2)));
+        }
 
-}
+    }
 
 
     public class MesgRecvThread extends Thread {
@@ -136,7 +140,7 @@ public class GameMainController implements Initializable {
                 while(true) {
                     String inputLine = br.readLine();
                     if(inputLine != null) {
-			             // for debug
+                        // for debug
                         // System.out.println(inputLine);
                         String[] inputTokens = inputLine.split(",");
                         String cmd = inputTokens[0];
@@ -152,8 +156,8 @@ public class GameMainController implements Initializable {
                             }
 
                             Thread thread = new BallMoveThread(arrayBall.get(ballId),
-                                                               Integer.parseInt(inputTokens[2]),
-                                                               Integer.parseInt(inputTokens[3]));
+                            Integer.parseInt(inputTokens[2]),
+                            Integer.parseInt(inputTokens[3]));
                             thread.start();
                         }else if (cmd.equals("EnemyPaddle")) {
                             Platform.runLater(() -> EnemyPaddle.setX(-1.0*Integer.parseInt(inputTokens[2])));
@@ -165,7 +169,7 @@ public class GameMainController implements Initializable {
 
                             if(inputTokens[1].equals("end")){
                                 if(id % 2 == 1){
-                                     Collections.reverse(arrayBlock);
+                                    Collections.reverse(arrayBlock);
                                 }
 
                                 Platform.runLater(() -> root.getChildren().addAll(arrayBlock));
@@ -183,13 +187,32 @@ public class GameMainController implements Initializable {
                         }else if(cmd.equals("BlockDelete")){
                             int blockId = Integer.parseInt(inputTokens[1]);
                             arrayBlock.get(blockId).visibleProperty().bind(new SimpleBooleanProperty(false));
+                        }else if(cmd.equals("Animation")){
+                          AnimationText.visibleProperty().bind(new SimpleBooleanProperty(true));
+                          if(!inputTokens[1].equals("0")){
+                            show_text(AnimationText,String.valueOf(inputTokens[1]),Integer.parseInt(inputTokens[2]));
+                          }else{
+                            show_text(AnimationText,"GAMESTART",50);
+                          }
+                        }else if(cmd.equals("AnimationFinish")){
+                          AnimationText.visibleProperty().bind(new SimpleBooleanProperty(false));
+                        }else if(cmd.equals("Win")){
+                            // Animation
+                            AnimationText.visibleProperty().bind(new SimpleBooleanProperty(true));
+                            show_text(AnimationText,cmd,50);
+                            System.out.println("win");
+                        }else if(cmd.equals("Lose")){
+                            // Animation
+                            AnimationText.visibleProperty().bind(new SimpleBooleanProperty(true));
+                            show_text(AnimationText,cmd,50);
+                            System.out.println("lose");
                         }else{
                             break;
                         }
 
                     }
                 }
-		        socket.close();
+                socket.close();
             } catch (IOException e) {
                 System.err.println("error occured: " + e);
             }
@@ -221,9 +244,9 @@ public class GameMainController implements Initializable {
 
 
     /**
-     * return instance(singleton)
-     * @return INSTANCE
-     */
+    * return instance(singleton)
+    * @return INSTANCE
+    */
     public static GameMainController getInstance() {
         return INSTANCE;
     }
@@ -234,15 +257,15 @@ public class GameMainController implements Initializable {
 
     @FXML
     private void handleKeyPressed(KeyEvent event) {
-	//  System.out.println("keypressed");
-	//  System.out.println(event.getCode());
-    MovePaddle(MyPaddle,event.getCode());
+        //  System.out.println("keypressed");
+        //  System.out.println(event.getCode());
+        MovePaddle(MyPaddle,event.getCode());
 
     }
 
     /**
-     * Initializes the controller class.
-     */
+    * Initializes the controller class.
+    */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         // TODO
@@ -250,6 +273,11 @@ public class GameMainController implements Initializable {
 
     }
 
-
+    public static void show_text(Text AnimationText, String str,int size){
+        AnimationText.setX(-size/4);
+        AnimationText.setY(size/4);
+        AnimationText.setFont(Font.font(size));
+        AnimationText.setText(str);
+    }
 
 }

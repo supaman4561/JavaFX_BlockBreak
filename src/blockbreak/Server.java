@@ -96,6 +96,8 @@ class ClientProcThread extends Thread {
 
 class BallMoveThread extends Thread {
     private ArrayList<Ball> ballArray;
+    private int p1LivingBlockNum;
+    private int p2LivingBlockNum;
     private ArrayList<Block> blockArray;
     private Timer timer;
     private TimerTask ballAddTask;
@@ -103,6 +105,8 @@ class BallMoveThread extends Thread {
     public BallMoveThread(ArrayList<Block> blockArray) {
         ballArray = new ArrayList<Ball>();
         this.blockArray = blockArray;
+        p1LivingBlockNum = blockArray.size() / 2;
+        p2LivingBlockNum = p1LivingBlockNum;
 
         ballAddTask = new TimerTask() {
             public void run() {
@@ -131,6 +135,9 @@ class BallMoveThread extends Thread {
                 Server.SendAll(str);
                 blockCollision(target);
                 paddleCollision(target);
+            }
+            if(isFinished() == true){
+                break;
             }
             end = System.currentTimeMillis();
             try{
@@ -227,10 +234,33 @@ class BallMoveThread extends Thread {
 
                 if(deathFlag == false){
                     target.dead(id);
+                    // player1
+                    if(id < 20){
+                        p1LivingBlockNum -= 1;
+                    // player2
+                    }else{
+                        p2LivingBlockNum -= 1;
+                    }
                 }
 
             }
         }
+    }
+
+    private boolean isFinished(){
+        boolean finish = true;
+
+        if(p1LivingBlockNum == 0){
+            Server.SendAll("Win",0);
+            Server.SendAll("Lose",1);
+        }else if(p2LivingBlockNum == 0){
+            Server.SendAll("Lose",0);
+            Server.SendAll("Win",1);
+        }else{
+            finish = false;
+        }
+
+        return finish;
     }
 
 }
@@ -440,14 +470,25 @@ public class Server {
                 if(myClientProcThread.size() == 2){
 
 
-
                     for(int i=0; i<2; i++){
                         myClientProcThread.get(i).generateBlock(blockArray);
                     }
 
                     try{
-                        Thread.sleep(5000);
-                    }catch(Exception e){}
+
+                      for(int num=3; num>=0; num--){
+                        for(int size=500; size>0; size-=50){
+                          String str = new String("Animation," + num + "," + size + ",");
+                    	    Server.SendAll(str);
+                          Thread.sleep(100);
+                        }
+                      }
+                      String str = new String("AnimationFinish,");
+                      Server.SendAll(str);
+
+                    }catch(Exception e){
+
+                    }
 
                         myBallMoveThread = new BallMoveThread(blockArray);
                         myBallMoveThread.start();
