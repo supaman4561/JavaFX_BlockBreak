@@ -67,17 +67,21 @@ class ClientProcThread extends Thread {
 
             myName = myIn.readLine();
 
+            String str;
             String keycode = " ";         // used at sending kecode to client
+            String command;
+            String[] input;
 
             // watching input to socket
             while(true) {
-                String str = myIn.readLine();
-                String[] input = str.split(",", -1);
+                str = myIn.readLine();
                 // for debug
                 // System.out.println("Receive from client No." + number +
                 //                    "(" + myName + "), Messages: " + str);
                 if(str != null) {
-                    if(input[0].equals("Paddle")){
+                    input = str.split(",", -1);
+                    command = input[0];
+                    if(command.equals("Paddle")){
                         if(input[1].equals("0")){
                             paddleX[0] = Integer.parseInt(input[2]) + 120;
                         }else if(input[1].equals("1")){
@@ -85,6 +89,9 @@ class ClientProcThread extends Thread {
                         }
                         String enemy = new String("EnemyPaddle," + number + "," + input[2]);
                         Server.SendAll(enemy,1 - number);
+                    }else if(command.equals("GameClose")){
+                        Server.connectEnd(number);
+                        break;
                     }
                 }
             }
@@ -137,6 +144,8 @@ class BallMoveThread extends Thread {
                 paddleCollision(target);
             }
             if(isFinished() == true){
+                timer.cancel();
+                timer = null;
                 break;
             }
             end = System.currentTimeMillis();
@@ -237,7 +246,7 @@ class BallMoveThread extends Thread {
                     // player1
                     if(id < 20){
                         p1LivingBlockNum -= 1;
-                    // player2
+                        // player2
                     }else{
                         p2LivingBlockNum -= 1;
                     }
@@ -387,11 +396,16 @@ class Block {
         Server.SendAll(str);
         flag = false;
     }
+
+    public void recover(){
+        flag = true;
+    }
 }
 
 public class Server {
 
-    private static int maxConnection = 2;
+    private static int maxConnection = 10;
+    private static int cn;
     private static ArrayList<Socket> incoming;
     private static ArrayList<InputStreamReader> isr;
     private static ArrayList<BufferedReader> in;
@@ -438,6 +452,22 @@ public class Server {
         }
     }
 
+    private static void recoverBlock(){
+        for(int i=0; i<blockArray.size(); i++){
+            blockArray.get(i).recover();
+        }
+    }
+
+    public static void connectEnd(int n){
+        incoming.remove(0);
+        isr.remove(0);
+        in.remove(0);
+        out.remove(0);
+        myClientProcThread.remove(0);
+        System.out.println("Leave client No." + n);
+        cn -= 1;
+    }
+
     public static void main(String[] args) {
 
         incoming = new ArrayList<Socket>();
@@ -447,28 +477,28 @@ public class Server {
         myClientProcThread = new ArrayList<ClientProcThread>();
         blockArray = new ArrayList<Block>();
 
-        int n;
-
         initBlock();
+        cn = 0;
 
         try {
             System.out.println("The server has launched!");
             ServerSocket server = new ServerSocket(10027);
             while(true) {
-                n = incoming.size();
                 incoming.add(server.accept());
-                System.out.println("Accept client No." + n);
+                System.out.println("Accept client No." + cn);
 
-                isr.add(new InputStreamReader(incoming.get(n).getInputStream()));
-                in.add(new BufferedReader(isr.get(n)));
-                out.add(new PrintWriter(incoming.get(n).getOutputStream(), true));
+                isr.add(new InputStreamReader(incoming.get(cn).getInputStream()));
+                in.add(new BufferedReader(isr.get(cn)));
+                out.add(new PrintWriter(incoming.get(cn).getOutputStream(), true));
 
                 myClientProcThread.add(
-                new ClientProcThread(n, incoming.get(n), isr.get(n), in.get(n), out.get(n)));
-                myClientProcThread.get(n).start();
+                new ClientProcThread(cn, incoming.get(cn), isr.get(cn), in.get(cn), out.get(cn)));
+                myClientProcThread.get(cn).start();
+                cn+=1;
 
-                if(myClientProcThread.size() == 2){
+                if(cn == 2){
 
+                    recoverBlock();
 
                     for(int i=0; i<2; i++){
                         myClientProcThread.get(i).generateBlock(blockArray);
@@ -476,27 +506,27 @@ public class Server {
 
                     try{
 
-                      for(int num=3; num>=0; num--){
-                        for(int size=500; size>0; size-=50){
-                          String str = new String("Animation," + num + "," + size + ",");
-                    	    Server.SendAll(str);
-                          Thread.sleep(100);
+                        for(int num=3; num>=0; num--){
+                            for(int size=500; size>0; size-=50){
+                                String str = new String("Animation," + num + "," + size + ",");
+                                Server.SendAll(str);
+                                Thread.sleep(100);
+                            }
                         }
-                      }
-                      String str = new String("AnimationFinish,");
-                      Server.SendAll(str);
+                        String str = new String("AnimationFinish,");
+                        Server.SendAll(str);
 
                     }catch(Exception e){
 
                     }
 
-                        myBallMoveThread = new BallMoveThread(blockArray);
-                        myBallMoveThread.start();
+                    myBallMoveThread = new BallMoveThread(blockArray);
+                    myBallMoveThread.start();
 
-                    }
                 }
-            } catch (Exception e) {
-                System.out.println("Error occured when socket was being created: " + e );
             }
+        } catch (Exception e) {
+            System.out.println("Error occured when socket was being created: " + e );
         }
     }
+}

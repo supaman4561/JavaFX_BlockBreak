@@ -10,12 +10,14 @@ import java.net.*;
 import java.util.*;
 import javafx.application.*;
 import javafx.fxml.*;
+import javafx.event.ActionEvent;
 import javafx.scene.*;
 import javafx.scene.input.*;
 import javafx.scene.layout.*;
 import javafx.scene.shape.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
+import javafx.scene.control.Button;
 import javafx.beans.property.*;
 import java.util.concurrent.*;
 import javafx.scene.text.Font;
@@ -30,21 +32,18 @@ public class GameMainController implements Initializable {
 
     @FXML
     private Text myName;
-
     @FXML
     private Text opponentName;
-
     @FXML
     private Pane root;
-
     @FXML
     private Rectangle MyPaddle;
-
     @FXML
     private Rectangle EnemyPaddle;
-
     @FXML
     private Text AnimationText;
+    @FXML
+    private Button ReturnButton;
 
     /**
     * instanvce(singleton)
@@ -60,6 +59,7 @@ public class GameMainController implements Initializable {
     * for sending to Server
     */
     private static Socket mainSocket = null;
+    private static MesgRecvThread mrt = null;
     private static int id;
     private ArrayList<Circle> arrayBall = new ArrayList<Circle>();
     private ArrayList<ColoredRect> arrayBlock = new ArrayList<ColoredRect>();
@@ -84,8 +84,7 @@ public class GameMainController implements Initializable {
         INSTANCE = fxmlLoader.getController();
     }
 
-    public GameMainController() {
-
+    public void connectToServer(){
         try {
             mainSocket = new Socket("localhost", 10027);
         } catch (UnknownHostException e) {
@@ -93,10 +92,8 @@ public class GameMainController implements Initializable {
         } catch (IOException e) {
             System.err.println("The error occured." + e);
         }
-
-        MesgRecvThread mrt = new MesgRecvThread(mainSocket , BlockBreak.getUserName());
+        mrt = new MesgRecvThread(mainSocket , BlockBreak.getUserName());
         mrt.start();
-
     }
 
     public void MovePaddle(Rectangle MyPaddle,KeyCode key){
@@ -118,11 +115,11 @@ public class GameMainController implements Initializable {
     }
 
 
-    public class MesgRecvThread extends Thread {
+    private class MesgRecvThread extends Thread {
 
         Socket socket;
         String myName;
-	    float mySpeed = 0;
+        float mySpeed = 0;
 
         public MesgRecvThread(Socket s, String n) {
 
@@ -188,24 +185,19 @@ public class GameMainController implements Initializable {
                             int blockId = Integer.parseInt(inputTokens[1]);
                             arrayBlock.get(blockId).visibleProperty().bind(new SimpleBooleanProperty(false));
                         }else if(cmd.equals("Animation")){
-                          AnimationText.visibleProperty().bind(new SimpleBooleanProperty(true));
-                          if(!inputTokens[1].equals("0")){
-                            show_text(AnimationText,String.valueOf(inputTokens[1]),Integer.parseInt(inputTokens[2]));
-                          }else{
-                            show_text(AnimationText,"GAMESTART",50);
-                          }
+                            AnimationText.visibleProperty().bind(new SimpleBooleanProperty(true));
+                            if(!inputTokens[1].equals("0")){
+                                show_text(AnimationText,String.valueOf(inputTokens[1]),Integer.parseInt(inputTokens[2]));
+                            }else{
+                                show_text(AnimationText,"GAMESTART",50);
+                            }
                         }else if(cmd.equals("AnimationFinish")){
-                          AnimationText.visibleProperty().bind(new SimpleBooleanProperty(false));
-                        }else if(cmd.equals("Win")){
+                            AnimationText.visibleProperty().bind(new SimpleBooleanProperty(false));
+                        }else if(cmd.equals("Win") || cmd.equals("Lose")){
                             // Animation
                             AnimationText.visibleProperty().bind(new SimpleBooleanProperty(true));
                             show_text(AnimationText,cmd,50);
-                            System.out.println("win");
-                        }else if(cmd.equals("Lose")){
-                            // Animation
-                            AnimationText.visibleProperty().bind(new SimpleBooleanProperty(true));
-                            show_text(AnimationText,cmd,50);
-                            System.out.println("lose");
+                            ReturnButton.visibleProperty().bind(new SimpleBooleanProperty(true));
                         }else{
                             break;
                         }
@@ -242,6 +234,20 @@ public class GameMainController implements Initializable {
         }
     }
 
+    private void terminationProcess(){
+        root.getChildren().removeAll(arrayBall);
+        root.getChildren().removeAll(arrayBlock);
+        arrayBall.clear();
+        arrayBlock.clear();
+        AnimationText.visibleProperty().bind(new SimpleBooleanProperty(false));
+        ReturnButton.visibleProperty().bind(new SimpleBooleanProperty(false));
+        try{
+            mainSocket.close();
+        }catch (IOException e) {
+            System.err.println("error occured: " + e);
+        }
+    }
+
 
     /**
     * return instance(singleton)
@@ -253,6 +259,7 @@ public class GameMainController implements Initializable {
 
     public void show() {
         BlockBreak.getPresentStage().setScene(SCENE);
+        connectToServer();
     }
 
     @FXML
@@ -261,6 +268,13 @@ public class GameMainController implements Initializable {
         //  System.out.println(event.getCode());
         MovePaddle(MyPaddle,event.getCode());
 
+    }
+
+    @FXML
+    private void handleReturnButtonPressed(ActionEvent event){
+        myOut.println("GameClose");
+        terminationProcess();
+        LoginController.getInstance().show();
     }
 
     /**

@@ -1,23 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.shape.*?>
 <?import java.lang.*?>
 <?import java.util.*?>
 <?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane onKeyPressed="#handleKeyPressed" prefHeight="630.0" prefWidth="320.0" style="-fx-background-color: lightgray;&#10;&#10;&#10;&#10;" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="blockbreak.GameMainController">
-
+<AnchorPane onKeyPressed="#handleKeyPressed" prefHeight="630.0" prefWidth="320.0" style="-fx-background-color: lightgray;&#10;&#10;&#10;&#10;" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="blockbreak.GameMainController">
   <children>
     <Text fx:id="opponentName" layoutX="10.0" layoutY="20.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" />
     <Text fx:id="myName" layoutX="300.0" layoutY="620.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" textAlignment="RIGHT" />
     <Pane fx:id="root" layoutX="10.0" layoutY="23.0" prefHeight="600.0" prefWidth="300.0" style="-fx-background-color: white;&#10;">
-         <children>
-            <Rectangle fx:id="EnemyPaddle" arcHeight="5.0" arcWidth="5.0" fill="DODGERBLUE" height="5.0" layoutX="120.0" layoutY="120.0" stroke="BLACK" strokeType="INSIDE" width="60.0" />
-            <Rectangle fx:id="MyPaddle" arcHeight="5.0" arcWidth="5.0" fill="DODGERBLUE" height="5.0" layoutX="120.0" layoutY="460.0" stroke="BLACK" strokeType="INSIDE" width="60.0" />
-            <Text fx:id = "AnimationText" layoutX = "150.0" layoutY = "310.0" strokeType="OUTSIDE" strokeWidth = "0.0" text = ""  />
-         </children></Pane>
+      <children>
+        <Rectangle fx:id="EnemyPaddle" arcHeight="5.0" arcWidth="5.0" fill="DODGERBLUE" height="5.0" layoutX="120.0" layoutY="120.0" stroke="BLACK" strokeType="INSIDE" width="60.0" />
+        <Rectangle fx:id="MyPaddle" arcHeight="5.0" arcWidth="5.0" fill="DODGERBLUE" height="5.0" layoutX="120.0" layoutY="460.0" stroke="BLACK" strokeType="INSIDE" width="60.0" />
+        <Text fx:id="AnimationText" layoutX="150.0" layoutY="310.0" strokeType="OUTSIDE" strokeWidth="0.0" text="" />
+        <Button id="Button" fx:id="ReturnButton" disable="false" focusTraversable="false" layoutX="103.0" layoutY="397.0" mnemonicParsing="false" onAction="#handleReturnButtonPressed" prefHeight="42.9609375" prefWidth="95.0" text="トップに戻る" textAlignment="CENTER" visible="false" />
+      </children>
+    </Pane>
   </children>
 </AnchorPane>

@@ -27,20 +27,20 @@ import javafx.scene.paint.Color;
  * @author PCUser
  */
 public class LoginController implements Initializable {
-    
+
     @FXML
     private TextField fieldName;
-    
+
     /**
-     * instance(singleton) 
+     * instance(singleton)
      */
     private static final LoginController INSTANCE;
-    
+
     /**
      * Scene(singleton)
      */
     private static final Scene SCENE;
-     
+
     static {
         FXMLLoader fxmlLoader = new FXMLLoader(BlockBreak.class.getResource("Login.fxml"));
         try {
@@ -52,9 +52,9 @@ public class LoginController implements Initializable {
         Scene s = new Scene(parent);
         s.setFill(Color.TRANSPARENT);
         SCENE = s;
-        INSTANCE = fxmlLoader.getController();   
+        INSTANCE = fxmlLoader.getController();
     }
-     
+
     /**
      * return instance(singleton)
      * @return INSTANCE
@@ -62,18 +62,18 @@ public class LoginController implements Initializable {
     public static LoginController getInstance() {
         return INSTANCE;
     }
-    
+
     public void show() {
         BlockBreak.getPresentStage().setScene(SCENE);
     }
-    
+
     @FXML
     private void handleButtonAction(ActionEvent event) {
         System.out.println(fieldName.getText());
         BlockBreak.setUserName(fieldName.getText());
         GameMainController.getInstance().show();
     }
-    
+
     /**
      * Initializes the controller class.
      */
@@ -81,7 +81,7 @@ public class LoginController implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         fieldName.setPromptText("input name");
         fieldName.setFocusTraversable(false);
-    }    
-    
-    
+    }
+
+
 }
