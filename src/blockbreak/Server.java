@@ -399,7 +399,17 @@ public class Server {
                     }
 
                     try{
-                        Thread.sleep(5000);
+
+                      for(int num=3; num>=0; num--){
+                        for(int size=500; size>0; size-=50){
+                          String str = new String("Animation," + num + "," + size + ",");
+                    	    Server.SendAll(str);
+                          Thread.sleep(100);
+                        }
+                      }
+                      String str = new String("AnimationFinish,");
+                      Server.SendAll(str);
+
                     }catch(Exception e){
 
                     }

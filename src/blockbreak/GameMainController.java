@@ -18,6 +18,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.beans.property.*;
 import java.util.concurrent.*;
+import javafx.scene.text.Font;
+import javafx.scene.text.TextAlignment;
 
 /**
 * FXML Controller class
@@ -41,6 +43,8 @@ public class GameMainController implements Initializable {
     @FXML
     private Rectangle EnemyPaddle;
 
+    @FXML
+    private Text AnimationText;
 
     /**
     * instanvce(singleton)
@@ -190,11 +194,24 @@ public class GameMainController implements Initializable {
                         }else if(cmd.equals("BlockDelete")){
                             int blockId = Integer.parseInt(inputTokens[1]);
                             arrayBlock.get(blockId).visibleProperty().bind(new SimpleBooleanProperty(false));
+                        }else if(cmd.equals("Animation")){
+                          AnimationText.visibleProperty().bind(new SimpleBooleanProperty(true));
+                          if(!inputTokens[1].equals("0")){
+                            show_text(AnimationText,String.valueOf(inputTokens[1]),Integer.parseInt(inputTokens[2]));
+                          }else{
+                            show_text(AnimationText,"GAMESTART",50);
+                          }
+                        }else if(cmd.equals("AnimationFinish")){
+                          AnimationText.visibleProperty().bind(new SimpleBooleanProperty(false));
                         }else if(cmd.equals("Win")){
                             // Animation
+                            AnimationText.visibleProperty().bind(new SimpleBooleanProperty(true));
+                            show_text(AnimationText,cmd,50);
                             System.out.println("win");
                         }else if(cmd.equals("Lose")){
                             // Animation
+                            AnimationText.visibleProperty().bind(new SimpleBooleanProperty(true));
+                            show_text(AnimationText,cmd,50);
                             System.out.println("lose");
                         }else{
                             break;
@@ -265,6 +282,11 @@ public class GameMainController implements Initializable {
 
     }
 
-
+    public static void show_text(Text AnimationText, String str,int size){
+        AnimationText.setX(-size/4);
+        AnimationText.setY(size/4);
+        AnimationText.setFont(Font.font(size));
+        AnimationText.setText(str);
+    }
 
 }
