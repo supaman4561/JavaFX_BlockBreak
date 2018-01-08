@@ -58,7 +58,6 @@ public class GameMainController implements Initializable {
     private static Socket mainSocket = null;
     private static int id;
     private ArrayList<Circle> arrayBall = new ArrayList<Circle>();
-    private int ballMax = 1;
     private ArrayList<ColoredRect> arrayBlock = new ArrayList<ColoredRect>();
 
     PrintWriter myOut;
@@ -82,11 +81,6 @@ public class GameMainController implements Initializable {
     }
 
     public GameMainController() {
-
-        for (int i=0; i<ballMax; i++){
-            arrayBall.add(new Circle(5.0));
-            arrayBall.get(i).visibleProperty().bind(new SimpleBooleanProperty(true));
-        }
 
         try {
             mainSocket = new Socket("localhost", 10027);
@@ -124,7 +118,7 @@ public class GameMainController implements Initializable {
 
         Socket socket;
         String myName;
-	float mySpeed = 0;
+	    float mySpeed = 0;
 
         public MesgRecvThread(Socket s, String n) {
 
@@ -152,13 +146,16 @@ public class GameMainController implements Initializable {
                             id = Integer.parseInt(inputTokens[1]);
                         }else if(cmd.equals("Ball")){
                             int ballId = Integer.parseInt(inputTokens[1]);
+                            if(ballId > arrayBall.size() - 1){
+                                arrayBall.add(new Circle(5.0));
+                                Platform.runLater(() -> root.getChildren().add(arrayBall.get(ballId)));
+                            }
 
                             Thread thread = new BallMoveThread(arrayBall.get(ballId),
                                                                Integer.parseInt(inputTokens[2]),
                                                                Integer.parseInt(inputTokens[3]));
                             thread.start();
                         }else if (cmd.equals("EnemyPaddle")) {
-                            System.out.println(inputLine);
                             Platform.runLater(() -> EnemyPaddle.setX(-1.0*Integer.parseInt(inputTokens[2])));
                         }else if(cmd.equals("Blockset")){
 
@@ -171,10 +168,6 @@ public class GameMainController implements Initializable {
                                      Collections.reverse(arrayBlock);
                                 }
 
-                                System.out.println(id);
-                                for(int i=0; i < arrayBlock.size() ; i++){
-                                    System.out.println(arrayBlock.get(i).getY());
-                                }
                                 Platform.runLater(() -> root.getChildren().addAll(arrayBlock));
                             }else{
                                 x = Integer.parseInt(inputTokens[1]);
@@ -254,8 +247,6 @@ public class GameMainController implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         // TODO
         myName.setText(BlockBreak.getUserName());
-
-	root.getChildren().addAll(arrayBall);
 
     }
 

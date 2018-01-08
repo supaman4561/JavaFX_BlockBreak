@@ -1,14 +1,14 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+* To change this license header, choose License Headers in Project Properties.
+* To change this template file, choose Tools | Templates
+* and open the template in the editor.
+*/
 package blockbreak;
 
 /**
- *
- * @author PCUser
- */
+*
+* @author PCUser
+*/
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -17,10 +17,13 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.lang.Math;
+
 /*
- * Server Side
- */
+* Server Side
+*/
 class ClientProcThread extends Thread {
     private int number;
     private Socket incoming;
@@ -31,7 +34,7 @@ class ClientProcThread extends Thread {
     private static int paddleX[] = {120,120};
 
     public ClientProcThread(int n, Socket i, InputStreamReader isr,
-			    BufferedReader in, PrintWriter out) {
+    BufferedReader in, PrintWriter out) {
         number = n;
         incoming = i;
         myIsr = isr;
@@ -42,18 +45,18 @@ class ClientProcThread extends Thread {
 
 
     static int[] getPaddleX(){
-	     return paddleX;
+        return paddleX;
     }
 
     public void generateBlock(ArrayList<Block> blockArray){
-    	Block target;
+        Block target;
         String message;
 
-    	for(int id=0; id<blockArray.size(); id++){
-    	    target = blockArray.get(id);
+        for(int id=0; id<blockArray.size(); id++){
+            target = blockArray.get(id);
             message = new String("Blockset," + target.getX() + "," + target.getY());
-    	    myOut.println(message);
-    	}
+            myOut.println(message);
+        }
         message = new String("Blockset,end");
         myOut.println(message);
     }
@@ -64,27 +67,27 @@ class ClientProcThread extends Thread {
 
             myName = myIn.readLine();
 
-	    String keycode = " ";         // used at sending kecode to client
+            String keycode = " ";         // used at sending kecode to client
 
             // watching input to socket
             while(true) {
                 String str = myIn.readLine();
-		String[] input = str.split(",", -1);
-		// for debug
-		// System.out.println("Receive from client No." + number +
+                String[] input = str.split(",", -1);
+                // for debug
+                // System.out.println("Receive from client No." + number +
                 //                    "(" + myName + "), Messages: " + str);
                 if(str != null) {
                     if(input[0].equals("Paddle")){
                         if(input[1].equals("0")){
-              			         paddleX[0] = Integer.parseInt(input[2]) + 120;
-              		      }else if(input[1].equals("1")){
-              			         paddleX[1] = -1 * Integer.parseInt(input[2]) + 120;
-              		      }
+                            paddleX[0] = Integer.parseInt(input[2]) + 120;
+                        }else if(input[1].equals("1")){
+                            paddleX[1] = -1 * Integer.parseInt(input[2]) + 120;
+                        }
                         String enemy = new String("EnemyPaddle," + number + "," + input[2]);
-                		    Server.SendAll(enemy,1 - number);
+                        Server.SendAll(enemy,1 - number);
                     }
-                  }
                 }
+            }
         } catch (IOException e) {
 
         }
@@ -92,97 +95,100 @@ class ClientProcThread extends Thread {
 }
 
 class BallMoveThread extends Thread {
-    private int id;
-    private int ballX;
-    private int ballY;
-    private int radius = 5;
-    private int xVec = (int)(Math.random()*2 + 1);
-    private int yVec = (int)(Math.random()*2 + 1);
+    private ArrayList<Ball> ballArray;
     private ArrayList<Block> blockArray;
+    private Timer timer;
+    private TimerTask ballAddTask;
 
-    public BallMoveThread(int num,int x, int y, ArrayList<Block> blockArray) {
-    	id = num;
-    	ballX = x;
-    	ballY = y;
-        if(id%2 == 1){
-            xVec *= -1;
-            yVec *= -1;
-        }
-    	this.blockArray = blockArray;
+    public BallMoveThread(ArrayList<Block> blockArray) {
+        ballArray = new ArrayList<Ball>();
+        this.blockArray = blockArray;
+
+        ballAddTask = new TimerTask() {
+            public void run() {
+                ballArray.add(new Ball(150,300));
+            }
+        };
+
+        timer = new Timer();
+        // add ball every thirty seconds
+        timer.schedule(ballAddTask, 0L, 5000L);
     }
 
     @Override
     public void run() {
-	while(true){
-	    move();
-	    String str = new String("Ball," + id + "," + ballX + "," + ballY + ",");
-	    Server.SendAll(str);
-      blockCollision();
-      paddleCollision();
-	    try{
-		Thread.sleep(16);
-	    } catch (InterruptedException e) {
-		e.printStackTrace();
-	    }
-	}
-    }
 
-    private void move() {
-        if(ballX < 5 || ballX > 295){
-	    xVec *= -1;
-	}
+        Ball target;
+        long start;
+        long end;
 
-	if(ballY < 5 || ballY > 595){
-	    yVec *= -1;
-	}
-
-
-    	ballX += xVec;
-    	ballY += yVec;
-    }
-
-    private void paddleCollision(){
-      int paddleX[] = ClientProcThread.getPaddleX();
-      final int upperPaddleY = 120;
-      final int underPaddleY = 460;
-      int beforeX = ballX - xVec;
-      int beforeY = ballY - yVec;
-
-
-      if(beforeY <= underPaddleY && underPaddleY <= ballY){
-          if(paddleX[0] <= beforeX && beforeX <= paddleX[0] + 60){
-            ballY = underPaddleY - yVec;
-            yVec = -2;
-          }
-        } else if(beforeY >=  underPaddleY +5 && ballY <= underPaddleY +5){
-          if(paddleX[0] <= beforeX && beforeX <= paddleX[0] + 60){
-            ballY = underPaddleY - yVec;
-            yVec = 2;
-
-          }
-        } else if(beforeY >= upperPaddleY +5  && ballY <= upperPaddleY +5){
-          if(paddleX[1] <= beforeX && beforeX <= paddleX[1] + 60){
-            ballY = upperPaddleY - yVec;
-            yVec = 2;
-          }
-        } else if(beforeY <= upperPaddleY && upperPaddleY <= ballY){
-          if(paddleX[1] <= beforeX && beforeX <= paddleX[1] + 60){
-            ballY = upperPaddleY - yVec;
-            yVec = -2;
-          }
+        while(true){
+            start = System.currentTimeMillis();
+            for(int id=0; id<ballArray.size(); id++){
+                target = ballArray.get(id);
+                target.move();
+                String str = new String("Ball," + id + "," + target.getX() + "," + target.getY() + ",");
+                Server.SendAll(str);
+                blockCollision(target);
+                paddleCollision(target);
+            }
+            end = System.currentTimeMillis();
+            try{
+                Thread.sleep(16L - (end - start) / 1000000L);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
-    private void blockCollision(){
+    private void paddleCollision(Ball target){
+        int paddleX[] = ClientProcThread.getPaddleX();
+        final int upperPaddleY = 120;
+        final int underPaddleY = 460;
+        int ballX = target.getX();
+        int ballY = target.getY();
+        int xVec = target.getXVec();
+        int yVec = target.getYVec();
+        int beforeX = ballX - xVec;
+        int beforeY = ballY - yVec;
 
-	Block target;
+
+        if(beforeY <= underPaddleY && underPaddleY <= ballY){
+            if(paddleX[0] <= beforeX && beforeX <= paddleX[0] + 60){
+                target.setY(underPaddleY - yVec);
+                target.setYVec(target.getYVec() * -1);
+            }
+        } else if(beforeY >=  underPaddleY +5 && ballY <= underPaddleY +5){
+            if(paddleX[0] <= beforeX && beforeX <= paddleX[0] + 60){
+                target.setY(underPaddleY - yVec);
+                target.setYVec(target.getYVec() * -1);
+            }
+        } else if(beforeY >= upperPaddleY +5  && ballY <= upperPaddleY +5){
+            if(paddleX[1] <= beforeX && beforeX <= paddleX[1] + 60){
+                target.setY(upperPaddleY - yVec);
+                target.setYVec(target.getYVec() * -1);
+            }
+        } else if(beforeY <= upperPaddleY && upperPaddleY <= ballY){
+            if(paddleX[1] <= beforeX && beforeX <= paddleX[1] + 60){
+                target.setY(upperPaddleY - yVec);
+                target.setYVec(target.getYVec() * -1);
+            }
+        }
+    }
+
+    private void blockCollision(Ball bTarget){
+
+        Block target;
         boolean deathFlag;
         int blockX;
         int blockY;
         int bWidth;
         int bHeight;
+        int ballX;
+        int ballY;
+        int radius;
 
-	for(int id=0; id<blockArray.size(); id++){
+        for(int id=0; id<blockArray.size(); id++){
             target = blockArray.get(id);
             deathFlag = target.isAlive();
             if(deathFlag){
@@ -190,15 +196,18 @@ class BallMoveThread extends Thread {
                 blockY = target.getY();
                 bWidth = target.getWidth();
                 bHeight = target.getHeight();
+                ballX = bTarget.getX();
+                ballY = bTarget.getY();
+                radius = bTarget.getRadius();
 
                 // collision to block
                 // up & down
                 if(blockX <= ballX && ballX <= (blockX + bWidth)){
 
                     if((blockY <= (ballY + radius) && (ballY + radius) <= (blockY + bHeight)) ||
-		       (blockY <= (ballY - radius) && (ballY - radius) <= (blockY + bHeight))){
+                    (blockY <= (ballY - radius) && (ballY - radius) <= (blockY + bHeight))){
 
-                        yVec *= -1;
+                        bTarget.setYVec(bTarget.getYVec() * -1);
                         deathFlag = false;
                     }
 
@@ -209,9 +218,9 @@ class BallMoveThread extends Thread {
                 if(blockY <= ballY && ballY <= (blockY + bHeight)){
 
                     if((blockX <= (ballX + radius) && (ballX + radius) <= (blockX + bWidth)) ||
-		       (blockX <= (ballX - radius) && (ballX - radius) <= (blockX + bWidth))){
+                    (blockX <= (ballX - radius) && (ballX - radius) <= (blockX + bWidth))){
 
-                        xVec *= -1;
+                        bTarget.setXVec(bTarget.getXVec() * -1);
                         deathFlag = false;
                     }
                 }
@@ -220,10 +229,83 @@ class BallMoveThread extends Thread {
                     target.dead(id);
                 }
 
-	    }
-	}
+            }
+        }
     }
 
+}
+
+class Ball{
+    private int x;
+    private int y;
+    private int radius;
+    private int xVec;
+    private int yVec;
+
+    Ball(int x, int y){
+        this.x = x;
+        this.y = y;
+        radius = 5;
+        xVec = (int)(Math.random()*2 + 1);
+        yVec = (int)(Math.random()*2 + 1);
+    }
+
+    Ball(int x, int y, int radius){
+        this.x = x;
+        this.y = y;
+        this.radius = radius;
+        xVec = (int)(Math.random()*2 + 1);
+        yVec = (int)(Math.random()*2 + 1);
+    }
+
+    public int getX(){
+        return x;
+    }
+
+    public void setX(int x){
+        this.x = x;
+    }
+
+    public int getY(){
+        return y;
+    }
+
+    public void setY(int y){
+        this.y = y;
+    }
+
+    public int getRadius(){
+        return radius;
+    }
+
+    public int getXVec(){
+        return xVec;
+    }
+
+    public int getYVec(){
+        return yVec;
+    }
+
+    public void setXVec(int xVec){
+        this.xVec = xVec;
+    }
+
+    public void setYVec(int yVec){
+        this.yVec = yVec;
+    }
+
+    public void move() {
+        if(x < 5 || x > 295){
+            xVec *= -1;
+        }
+
+        if(y < 5 || y > 595){
+            yVec *= -1;
+        }
+
+        x += xVec;
+        y += yVec;
+    }
 }
 
 class Block {
@@ -235,45 +317,45 @@ class Block {
     private boolean flag;
 
     Block(int x, int y){
-	this.x = x;
-	this.y = y;
-	this.width = 50;
-	this.height = 20;
-	flag = true;
+        this.x = x;
+        this.y = y;
+        this.width = 50;
+        this.height = 20;
+        flag = true;
     }
 
     Block(int x, int y, int width, int height){
-	this.x = x;
-	this.y = y;
-	this.width = width;
-	this.height = height;
-	flag = true;
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        flag = true;
     }
 
     public int getX(){
-	return this.x;
+        return this.x;
     }
 
     public int getY(){
-	return this.y;
+        return this.y;
     }
 
     public int getWidth(){
-	return width;
+        return width;
     }
 
     public int getHeight(){
-	return height;
+        return height;
     }
 
     public boolean isAlive(){
-	return this.flag;
+        return this.flag;
     }
 
     public void dead(int id){
-	String str = new String("BlockDelete," + id);
-	Server.SendAll(str);
-	flag = false;
+        String str = new String("BlockDelete," + id);
+        Server.SendAll(str);
+        flag = false;
     }
 }
 
@@ -285,45 +367,45 @@ public class Server {
     private static ArrayList<BufferedReader> in;
     private static ArrayList<PrintWriter> out;
     private static ArrayList<ClientProcThread> myClientProcThread;
-    private static ArrayList<BallMoveThread> myBallMoveThread;
+    private static BallMoveThread myBallMoveThread;
     private static ArrayList<Block> blockArray;
 
     public static void SendAll(String str){
         for(int i=0; i<incoming.size(); i++){
             out.get(i).println(str);
             out.get(i).flush();
-	    // for debug
-	    // System.out.println("Send messages to client No." + i);
+            // for debug
+            // System.out.println("Send messages to client No." + i);
         }
     }
 
     public static void SendAll(String str,int destNum){
-	out.get(destNum).println(str);
-	out.get(destNum).flush();
+        out.get(destNum).println(str);
+        out.get(destNum).flush();
     }
 
     private static void initBlock(){
-	int xNum = 5;
-	int yNum = 4;
-	int xInterval = 25;
-	int yInterval1 = 20;
-	int yInterval2 = 500;
-	int width = 50;
-	int height = 20;
+        int xNum = 5;
+        int yNum = 4;
+        int xInterval = 25;
+        int yInterval1 = 20;
+        int yInterval2 = 500;
+        int width = 50;
+        int height = 20;
 
-	for(int i=0; i<yNum; i++){
-	    for(int j=0; j<xNum; j++){
-		blockArray.add(new Block(j*width+xInterval,
-					 i*height+yInterval1));
-	    }
-	}
+        for(int i=0; i<yNum; i++){
+            for(int j=0; j<xNum; j++){
+                blockArray.add(new Block(j*width+xInterval,
+                i*height+yInterval1));
+            }
+        }
 
-	for(int i=0; i<yNum; i++){
-	    for(int j=0; j<xNum; j++){
-		blockArray.add(new Block(j*width+xInterval,
-					 i*height+yInterval2));
-	    }
-	}
+        for(int i=0; i<yNum; i++){
+            for(int j=0; j<xNum; j++){
+                blockArray.add(new Block(j*width+xInterval,
+                i*height+yInterval2));
+            }
+        }
     }
 
     public static void main(String[] args) {
@@ -333,13 +415,11 @@ public class Server {
         in = new ArrayList<BufferedReader>();
         out = new ArrayList<PrintWriter>();
         myClientProcThread = new ArrayList<ClientProcThread>();
-	myBallMoveThread = new ArrayList<BallMoveThread>();
-	blockArray = new ArrayList<Block>();
+        blockArray = new ArrayList<Block>();
 
         int n;
-	int numBall=0;
 
-	initBlock();
+        initBlock();
 
         try {
             System.out.println("The server has launched!");
@@ -354,29 +434,28 @@ public class Server {
                 out.add(new PrintWriter(incoming.get(n).getOutputStream(), true));
 
                 myClientProcThread.add(
-				       new ClientProcThread(n, incoming.get(n), isr.get(n), in.get(n), out.get(n)));
-               myClientProcThread.get(n).start();
+                new ClientProcThread(n, incoming.get(n), isr.get(n), in.get(n), out.get(n)));
+                myClientProcThread.get(n).start();
 
-		if(myClientProcThread.size() == 2){
+                if(myClientProcThread.size() == 2){
 
 
 
-		    for(int i=0; i<2; i++){
-			myClientProcThread.get(i).generateBlock(blockArray);
-		    }
+                    for(int i=0; i<2; i++){
+                        myClientProcThread.get(i).generateBlock(blockArray);
+                    }
 
-		    try{
-			Thread.sleep(5000);
+                    try{
+                        Thread.sleep(5000);
                     }catch(Exception e){}
 
-                    numBall = myBallMoveThread.size();
-                    myBallMoveThread.add(new BallMoveThread(numBall, 150, 300, blockArray));
-                    myBallMoveThread.get(numBall).start();
+                        myBallMoveThread = new BallMoveThread(blockArray);
+                        myBallMoveThread.start();
 
+                    }
                 }
+            } catch (Exception e) {
+                System.out.println("Error occured when socket was being created: " + e );
             }
-        } catch (Exception e) {
-            System.out.println("Error occured when socket was being created: " + e );
         }
     }
-}
