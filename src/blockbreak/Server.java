@@ -285,16 +285,20 @@ class Ball{
         this.x = x;
         this.y = y;
         radius = 5;
-        xVec = (int)(Math.random()*2 + 1);
-        yVec = (int)(Math.random()*2 + 1);
+        xVec = (int)(Math.random()*6 - 3);
+        yVec = (int)(Math.random()*6 - 3);
+	if(xVec <= 0) xVec -= 1;
+	if(yVec <= 0) yVec -= 1;
     }
 
     Ball(int x, int y, int radius){
         this.x = x;
         this.y = y;
         this.radius = radius;
-        xVec = (int)(Math.random()*2 + 1);
-        yVec = (int)(Math.random()*2 + 1);
+        xVec = (int)(Math.random()*6 - 3);
+        yVec = (int)(Math.random()*6 - 3);
+	if(xVec <= 0) xVec -= 1;
+	if(yVec <= 0) yVec -= 1;
     }
 
     public int getX(){

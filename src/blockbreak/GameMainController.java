@@ -288,7 +288,11 @@ public class GameMainController implements Initializable {
     }
 
     public static void show_text(Text AnimationText, String str,int size){
-        AnimationText.setX(-size/4);
+	if(str.length() == 1){
+	    AnimationText.setX(-size/4);
+	}else{
+	    AnimationText.setX((-1)*str.length()*size/3.5);
+	}
         AnimationText.setY(size/4);
         AnimationText.setFont(Font.font(size));
         AnimationText.setText(str);
