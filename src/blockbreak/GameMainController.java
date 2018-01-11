@@ -86,7 +86,7 @@ public class GameMainController implements Initializable {
 
     public void connectToServer(){
         try {
-            mainSocket = new Socket("localhost", 10027);
+            mainSocket = new Socket("172.22.3.131", 10027);
         } catch (UnknownHostException e) {
             System.err.println("Not found IPAddress of host." + e);
         } catch (IOException e) {

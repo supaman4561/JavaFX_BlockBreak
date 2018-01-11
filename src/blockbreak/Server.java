@@ -48,18 +48,6 @@ class ClientProcThread extends Thread {
         return paddleX;
     }
 
-    public void generateBlock(ArrayList<Block> blockArray){
-        Block target;
-        String message;
-
-        for(int id=0; id<blockArray.size(); id++){
-            target = blockArray.get(id);
-            message = new String("Blockset," + target.getX() + "," + target.getY());
-            myOut.println(message);
-        }
-        message = new String("Blockset,end");
-        myOut.println(message);
-    }
 
     @Override
     public void run() {
@@ -274,6 +262,85 @@ class BallMoveThread extends Thread {
 
 }
 
+class RoomThread extends Thread{
+    private BallMoveThread myBallMoveThread;
+    private ArrayList<Block> blockArray;
+
+    public RoomThread(Client client1, Client client2){
+	blockArray = new ArrayList<Block>();
+    }
+
+    private SendMessageInRoom(String str){
+	client1.SendMessage(str);
+	client2.SendMessage(str);
+    }
+    
+    private initBlock(){
+	int xNum = 5;
+        int yNum = 4;
+        int xInterval = 25;
+        int yInterval1 = 20;
+        int yInterval2 = 500;
+        int width = 50;
+        int height = 20;
+
+        for(int i=0; i<yNum; i++){
+            for(int j=0; j<xNum; j++){
+                blockArray.add(new Block(j*width+xInterval,
+                i*height+yInterval1));
+            }
+        }
+
+        for(int i=0; i<yNum; i++){
+            for(int j=0; j<xNum; j++){
+                blockArray.add(new Block(j*width+xInterval,
+                i*height+yInterval2));
+            }
+        }
+    }
+
+    private void SendGenerateBlockMessage(){
+	Block target;
+        String message;
+
+        for(int id=0; id<blockArray.size(); id++){
+            target = blockArray.get(id);
+            message = new String("Blockset," + target.getX() + "," + target.getY());
+	    SendMessageInRoom();
+        }
+        message = new String("Blockset,end");
+        SendMessageInRoom();
+    }
+
+    private void SendStartMessage(){
+	try{
+
+	    for(int num=3; num>=0; num--){
+		for(int size=500; size>0; size-=50){
+		    String str = new String("Animation," + num + "," + size + ",");
+		    SendMessageInRoom(str);
+		    Thread.sleep(100);
+		}
+	    }
+	    String str = new String("AnimationFinish,");
+	    SendMessageInRoom(str);
+
+	}catch(Exception e){
+
+	}
+    }
+    
+    @Override
+    public run(){
+	initBlock();
+	SendGenerateBlockMessage();
+	SendStartMessage();
+	myBallMoveThread = new BallMoveThread(blockArray);
+	myBallMoveThread.start();
+	
+    }
+}
+
 class Ball{
     private int x;
     private int y;
@@ -406,62 +473,47 @@ class Block {
     }
 }
 
+class Client{
+    Socket socket;
+    InputStreamReader isr;
+    BufferedReader in;
+    PrintWriter out;
+
+    public Client(Socket socket){
+	this.socket = socket;
+	isr = new InputStreamreader(socket.getInputStream());
+	in = new Bufferedreader(isr);
+	out = new PrintWriter(socket.getOutputStream(), true);
+    }
+
+    public static SendMessage(String str){
+	out.println(str);
+	out.flush();
+    }
+    
+}
+
 public class Server {
 
     private static int maxConnection = 10;
     private static int cn;
-    private static ArrayList<Socket> incoming;
-    private static ArrayList<InputStreamReader> isr;
-    private static ArrayList<BufferedReader> in;
-    private static ArrayList<PrintWriter> out;
+    private static ArrayList<Client> arrayClient;
     private static ArrayList<ClientProcThread> myClientProcThread;
+    private static ArrayList<RoomThread> myRoomThread; 
     private static BallMoveThread myBallMoveThread;
     private static ArrayList<Block> blockArray;
 
     public static void SendAll(String str){
-        for(int i=0; i<incoming.size(); i++){
-            out.get(i).println(str);
-            out.get(i).flush();
+        for(int i=0; i<arrayClient.size(); i++){
+	    arrayClient.get(i).SendMessage(str);
             // for debug
             // System.out.println("Send messages to client No." + i);
         }
     }
 
     public static void SendAll(String str,int destNum){
-        out.get(destNum).println(str);
-        out.get(destNum).flush();
-    }
-
-    private static void initBlock(){
-        int xNum = 5;
-        int yNum = 4;
-        int xInterval = 25;
-        int yInterval1 = 20;
-        int yInterval2 = 500;
-        int width = 50;
-        int height = 20;
-
-        for(int i=0; i<yNum; i++){
-            for(int j=0; j<xNum; j++){
-                blockArray.add(new Block(j*width+xInterval,
-                i*height+yInterval1));
-            }
-        }
-
-        for(int i=0; i<yNum; i++){
-            for(int j=0; j<xNum; j++){
-                blockArray.add(new Block(j*width+xInterval,
-                i*height+yInterval2));
-            }
-        }
-    }
-
-    private static void recoverBlock(){
-        for(int i=0; i<blockArray.size(); i++){
-            blockArray.get(i).recover();
-        }
-    }
-
+        arrayClient.get(destNum).Sendmessage(str);    }
+    /*
     public static void connectEnd(int n){
         incoming.remove(0);
         isr.remove(0);
@@ -470,30 +522,23 @@ public class Server {
         myClientProcThread.remove(0);
         System.out.println("Leave client No." + n);
         cn -= 1;
-    }
+	}*/
 
     public static void main(String[] args) {
 
-        incoming = new ArrayList<Socket>();
-        isr = new ArrayList<InputStreamReader>();
-        in = new ArrayList<BufferedReader>();
-        out = new ArrayList<PrintWriter>();
+	arrayClient = new ArrayList<Client>();
+        myRoomThread = new ArrayList<RoomThread>();
         myClientProcThread = new ArrayList<ClientProcThread>();
         blockArray = new ArrayList<Block>();
 
-        initBlock();
         cn = 0;
 
         try {
             System.out.println("The server has launched!");
             ServerSocket server = new ServerSocket(10027);
             while(true) {
-                incoming.add(server.accept());
+		arrayClient.add(server.accept());
                 System.out.println("Accept client No." + cn);
-
-                isr.add(new InputStreamReader(incoming.get(cn).getInputStream()));
-                in.add(new BufferedReader(isr.get(cn)));
-                out.add(new PrintWriter(incoming.get(cn).getOutputStream(), true));
 
                 myClientProcThread.add(
                 new ClientProcThread(cn, incoming.get(cn), isr.get(cn), in.get(cn), out.get(cn)));
@@ -502,30 +547,10 @@ public class Server {
 
                 if(cn == 2){
 
-                    recoverBlock();
-
-                    for(int i=0; i<2; i++){
-                        myClientProcThread.get(i).generateBlock(blockArray);
-                    }
-
-                    try{
-
-                        for(int num=3; num>=0; num--){
-                            for(int size=500; size>0; size-=50){
-                                String str = new String("Animation," + num + "," + size + ",");
-                                Server.SendAll(str);
-                                Thread.sleep(100);
-                            }
-                        }
-                        String str = new String("AnimationFinish,");
-                        Server.SendAll(str);
-
-                    }catch(Exception e){
-
-                    }
-
-                    myBallMoveThread = new BallMoveThread(blockArray);
-                    myBallMoveThread.start();
+		    myRoomThread.add(new RoomThread(arrayClient.get(0), arrayClient.get(1)));
+		    arrayClient.remove(1);
+		    arrayClient.remove(0);
+		    cn -= 2;
 
                 }
             }
